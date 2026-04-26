@@ -23,6 +23,19 @@
 # misc
 .DS_Store
 *.pem
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Harness — generated screenshots (regenerable, large)
+.harness/screenshots/
+
+# Logs
+*.log
 
 # debug
 npm-debug.log*
