@@ -26,7 +26,7 @@ export default function HomePage() {
           <div className="absolute inset-0 hero-veil" aria-hidden />
 
           {/* Hero copy */}
-          <div className="absolute inset-x-0 top-0 bottom-[96px] flex items-end">
+          <div className="absolute inset-x-0 top-0 bottom-0 flex items-end">
             <div className="container-page pb-[72px]">
               <Reveal>
                 <span className="t-label-caps block text-white/80">
@@ -46,13 +46,11 @@ export default function HomePage() {
               </Reveal>
             </div>
           </div>
-
-          {/* Hero booking bar — overlaps the bottom of the hero */}
-          <div className="absolute inset-x-0 bottom-0">
-            <HeroBookingBar />
-          </div>
         </div>
       </section>
+
+      {/* ============== BOOKING BAR ============== */}
+      <HeroBookingBar />
 
       {/* ============== SPECIAL OFFERS ============== */}
       <SpecialOffers offers={offers} />

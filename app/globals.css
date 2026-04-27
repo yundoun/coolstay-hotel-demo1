@@ -309,4 +309,22 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
+  .bar-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-mute);
+    line-height: 1;
+  }
+  .bar-value {
+    display: block;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--color-ink);
+    margin-top: 3px;
+    line-height: 1.2;
+  }
 }

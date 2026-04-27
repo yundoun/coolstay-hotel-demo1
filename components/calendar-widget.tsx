@@ -16,9 +16,10 @@ import {
   isSameMonth,
   isToday,
   startOfDay,
+  differenceInCalendarDays,
 } from "date-fns";
 import { ko } from "date-fns/locale";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 type CalendarMode = "checkIn" | "checkOut";
 
@@ -40,23 +41,10 @@ export function CalendarWidget({
   mode: initialMode,
 }: CalendarWidgetProps) {
   const today = useMemo(() => startOfDay(new Date()), []);
-  const [currentMonth, setCurrentMonth] = useState(
-    () => checkIn ?? today,
-  );
+  const [currentMonth, setCurrentMonth] = useState(() => today);
   const [activeMode, setActiveMode] = useState<CalendarMode>(initialMode);
   const [hovered, setHovered] = useState<Date | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-
-  // Close on outside click
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        onClose();
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [onClose]);
 
   // Close on Escape
   useEffect(() => {
@@ -69,12 +57,14 @@ export function CalendarWidget({
 
   const nextMonth = addMonths(currentMonth, 1);
 
+  const nights =
+    checkIn && checkOut ? differenceInCalendarDays(checkOut, checkIn) : 0;
+
   const handleDayClick = useCallback(
     (day: Date) => {
       if (isBefore(day, today)) return;
 
       if (activeMode === "checkIn") {
-        // If picking check-in, set it and auto-switch to check-out
         if (checkOut && (isSameDay(day, checkOut) || isAfter(day, checkOut))) {
           onSelect(day, null);
         } else {
@@ -82,15 +72,12 @@ export function CalendarWidget({
         }
         setActiveMode("checkOut");
       } else {
-        // Picking check-out
         if (checkIn && (isSameDay(day, checkIn) || isBefore(day, checkIn))) {
-          // If user picks before check-in, restart with this as check-in
           onSelect(day, null);
           setActiveMode("checkOut");
         } else {
           onSelect(checkIn, day);
-          // Done — close after a short delay
-          setTimeout(onClose, 220);
+          setTimeout(onClose, 280);
         }
       }
     },
@@ -123,18 +110,18 @@ export function CalendarWidget({
   return (
     <motion.div
       ref={containerRef}
-      initial={{ opacity: 0, y: 8, scale: 0.98 }}
+      initial={{ opacity: 0, y: -8, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 8, scale: 0.98 }}
+      exit={{ opacity: 0, y: -8, scale: 0.98 }}
       transition={{ duration: 0.22, ease: [0.2, 0.7, 0.2, 1] }}
-      className="absolute top-full left-0 right-0 mt-3 z-50 bg-white rounded-[4px] shadow-[0_12px_48px_rgba(0,0,0,0.14),0_2px_8px_rgba(0,0,0,0.06)] border border-[var(--color-line-soft)] overflow-hidden"
+      className="bg-white rounded-[6px] shadow-[0_-8px_48px_rgba(0,0,0,0.14),0_-2px_8px_rgba(0,0,0,0.06)] border border-[var(--color-line-soft)] overflow-hidden"
     >
       {/* Mode tabs */}
       <div className="flex border-b border-[var(--color-line-soft)]">
         <button
           type="button"
           onClick={() => setActiveMode("checkIn")}
-          className={`flex-1 py-4 text-center transition-colors ${
+          className={`flex-1 py-3.5 text-center transition-colors ${
             activeMode === "checkIn"
               ? "bg-[var(--color-bg)] text-[var(--color-ink)] border-b-2 border-[var(--color-ink)]"
               : "bg-[var(--color-bg-soft)] text-[var(--color-ink-3)] hover:text-[var(--color-ink-2)]"
@@ -148,7 +135,7 @@ export function CalendarWidget({
         <button
           type="button"
           onClick={() => setActiveMode("checkOut")}
-          className={`flex-1 py-4 text-center transition-colors ${
+          className={`flex-1 py-3.5 text-center transition-colors ${
             activeMode === "checkOut"
               ? "bg-[var(--color-bg)] text-[var(--color-ink)] border-b-2 border-[var(--color-ink)]"
               : "bg-[var(--color-bg-soft)] text-[var(--color-ink-3)] hover:text-[var(--color-ink-2)]"
@@ -189,6 +176,20 @@ export function CalendarWidget({
           borderLeft
         />
       </div>
+
+      {/* Footer — summary */}
+      {nights > 0 && (
+        <div className="border-t border-[var(--color-line-soft)] px-6 py-3 text-center">
+          <span className="text-[13px] font-medium text-[var(--color-ink)]">
+            {format(checkIn!, "M월 d일 (EEE)", { locale: ko })}
+            <span className="text-[var(--color-mute)] mx-2">→</span>
+            {format(checkOut!, "M월 d일 (EEE)", { locale: ko })}
+            <span className="ml-2 inline-flex h-[22px] items-center rounded-full bg-[var(--color-bg-tint)] px-2 text-[11px] font-semibold text-[var(--color-honey-700)] tracking-wide align-middle">
+              {nights}박
+            </span>
+          </span>
+        </div>
+      )}
     </motion.div>
   );
 }
@@ -281,8 +282,13 @@ function MonthGrid({
       <div className="grid grid-cols-7">
         {days.map((day) => {
           const inMonth = isSameMonth(day, month);
+
+          // Out-of-month days: render empty placeholder to keep grid alignment
+          if (!inMonth) {
+            return <div key={day.toISOString()} className="h-10" />;
+          }
+
           const isPast = isBefore(day, today);
-          const disabled = !inMonth || isPast;
           const rangeStart = isRangeStart(day);
           const rangeEnd = isRangeEnd(day);
           const inRange = isInRange(day);
@@ -300,23 +306,21 @@ function MonthGrid({
             >
               <button
                 type="button"
-                disabled={disabled}
+                disabled={isPast}
                 onClick={() => onDayClick(day)}
-                onMouseEnter={() => !disabled && onDayHover(day)}
+                onMouseEnter={() => !isPast && onDayHover(day)}
                 onMouseLeave={() => onDayHover(null)}
                 className={`
                   relative z-10 flex h-10 w-10 items-center justify-center rounded-full text-[13px] font-medium transition-all duration-150
-                  ${disabled ? "text-[var(--color-line)] cursor-default" : "cursor-pointer"}
-                  ${!disabled && !rangeStart && !rangeEnd ? "hover:bg-[var(--color-line-soft)]" : ""}
+                  ${isPast ? "text-[var(--color-line)] cursor-default" : "cursor-pointer"}
+                  ${!isPast && !rangeStart && !rangeEnd ? "hover:bg-[var(--color-line-soft)]" : ""}
                   ${rangeStart || rangeEnd ? "bg-[var(--color-ink)] text-white" : ""}
-                  ${!disabled && !rangeStart && !rangeEnd && isSunday ? "text-red-400" : ""}
-                  ${!disabled && !rangeStart && !rangeEnd && !isSunday ? "text-[var(--color-ink)]" : ""}
+                  ${isTodayDate && !rangeStart && !rangeEnd ? "ring-2 ring-[var(--color-honey-500)] font-bold text-[var(--color-ink)]" : ""}
+                  ${!isPast && !rangeStart && !rangeEnd && !isTodayDate && isSunday ? "text-red-400" : ""}
+                  ${!isPast && !rangeStart && !rangeEnd && !isTodayDate && !isSunday ? "text-[var(--color-ink)]" : ""}
                 `}
               >
-                {inMonth ? format(day, "d") : ""}
-                {isTodayDate && !rangeStart && !rangeEnd && (
-                  <span className="absolute bottom-1 left-1/2 -translate-x-1/2 h-[3px] w-[3px] rounded-full bg-[var(--color-honey-500)]" />
-                )}
+                {format(day, "d")}
               </button>
             </div>
           );
