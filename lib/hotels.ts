@@ -621,6 +621,11 @@ const HOTEL_SPECS: HotelSpec[] = [
   },
 ];
 
+/** Hotel-id → pool-key mapping (used by theme curation on the homepage). */
+export const hotelPoolMap: Record<string, string> = Object.fromEntries(
+  HOTEL_SPECS.map((s) => [s.id, s.pool]),
+);
+
 // Expand specs → full Hotel objects (pull images from the pool)
 export const hotels: Hotel[] = HOTEL_SPECS.map((spec) => {
   const pool = POOLS[spec.pool];
