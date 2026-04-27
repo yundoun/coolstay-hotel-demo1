@@ -3,7 +3,7 @@ import Image from "next/image";
 import type { Room } from "@/lib/types";
 
 export function RoomCard({ room, hotelId }: { room: Room; hotelId: string }) {
-  const href = `/reservation?step=2&hotelId=${hotelId}&roomId=${room.id}`;
+  const href = `/reservation?step=1&hotelId=${hotelId}&roomId=${room.id}`;
   return (
     <Link href={href} className="group block focus:outline-none">
       <div className="img-hover relative aspect-[4/5] w-full overflow-hidden rounded-[2px] bg-[var(--color-line-soft)]">

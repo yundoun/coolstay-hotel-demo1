@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 
 const STEPS = [
   { n: 1, label: "일정" },
-  { n: 2, label: "객실" },
+  { n: 2, label: "호텔 · 객실" },
   { n: 3, label: "투숙객 정보" },
   { n: 4, label: "확인" },
 ];

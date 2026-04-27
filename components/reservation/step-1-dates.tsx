@@ -9,14 +9,12 @@ export function Step1Dates() {
   const nights = nightsBetween(s.checkIn, s.checkOut);
   const canNext = nights > 0;
 
-  const next = `/reservation?step=2`;
-
   return (
     <div className="mx-auto max-w-[960px]">
       <span className="eyebrow">Step 01</span>
       <h2 className="t-h2 mt-4">언제 머무르시나요?</h2>
       <p className="t-body mt-4 text-[var(--color-ink-3)]">
-        투숙 일정과 인원을 선택해 주세요. 다음 단계에서 일정에 맞는 객실을 안내해 드립니다.
+        투숙 일정과 인원을 선택해 주세요. 다음 단계에서 호텔을 안내해 드립니다.
       </p>
 
       <div className="mt-14 grid grid-cols-1 gap-10 lg:grid-cols-[1fr_360px]">
@@ -90,14 +88,14 @@ export function Step1Dates() {
           ← 홈으로
         </Link>
         <Link
-          href={next}
+          href="/reservation?step=2"
           aria-disabled={!canNext}
           onClick={(e) => {
             if (!canNext) e.preventDefault();
           }}
           className={canNext ? "btn btn-primary" : "btn btn-primary opacity-40 pointer-events-none"}
         >
-          다음 →
+          호텔 선택 →
         </Link>
       </div>
     </div>

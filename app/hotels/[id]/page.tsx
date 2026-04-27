@@ -250,7 +250,7 @@ export default function HotelDetailPage({
             <span className="eyebrow">Reservation</span>
           </Reveal>
           <Reveal delay={0.06}>
-            <h2 className="t-h2 max-w-[18ch]">
+            <h2 className="t-h2 max-w-[20ch]">
               {hotel.name}에서,<br />지금 예약을 시작하세요.
             </h2>
           </Reveal>

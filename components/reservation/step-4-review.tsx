@@ -31,7 +31,6 @@ export function Step4Review() {
     setSubmitting(true);
     const num = generateReservationNumber();
     s.setReservationNumber(num);
-    // Small delay for feedback
     setTimeout(() => {
       router.push("/reservation/complete");
     }, 280);

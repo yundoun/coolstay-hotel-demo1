@@ -56,6 +56,7 @@ export function ReservationCompleteClient() {
             <p className="t-body mt-6 max-w-[52ch] text-[var(--color-ink-3)]">
               예약 확인 메일이{" "}
               <span className="text-[var(--color-ink)]">{s.guestEmail}</span>로 발송되었습니다.
+              <br/>
               호텔에서 체크인 전 상세 안내를 드릴 예정입니다.
             </p>
           </div>

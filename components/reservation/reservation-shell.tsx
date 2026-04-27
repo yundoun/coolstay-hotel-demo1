@@ -1,11 +1,11 @@
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { StepIndicator } from "@/components/step-indicator";
 import { useReservation } from "@/lib/reservation-store";
 import { Step1Dates } from "./step-1-dates";
-import { Step2Room } from "./step-2-room";
+import { Step2Hotel } from "./step-2-hotel";
 import { Step3Guest } from "./step-3-guest";
 import { Step4Review } from "./step-4-review";
 import { AnimatePresence, motion } from "framer-motion";
@@ -22,9 +22,13 @@ export function ReservationShell() {
   const router = useRouter();
   const step = parseStep(search.get("step"));
   const store = useReservation();
+  const didInit = useRef(false);
 
   // Pre-fill from URL query on first mount if provided
   useEffect(() => {
+    if (didInit.current) return;
+    didInit.current = true;
+
     const ci = search.get("checkIn");
     const co = search.get("checkOut");
     const a = search.get("adults");
@@ -59,7 +63,7 @@ export function ReservationShell() {
       case 1:
         return <Step1Dates />;
       case 2:
-        return <Step2Room />;
+        return <Step2Hotel />;
       case 3:
         return <Step3Guest />;
       case 4:
