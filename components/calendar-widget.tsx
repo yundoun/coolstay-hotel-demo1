@@ -65,11 +65,7 @@ export function CalendarWidget({
       if (isBefore(day, today)) return;
 
       if (activeMode === "checkIn") {
-        if (checkOut && (isSameDay(day, checkOut) || isAfter(day, checkOut))) {
-          onSelect(day, null);
-        } else {
-          onSelect(day, checkOut);
-        }
+        onSelect(day, null);
         setActiveMode("checkOut");
       } else {
         if (checkIn && (isSameDay(day, checkIn) || isBefore(day, checkIn))) {
@@ -178,18 +174,36 @@ export function CalendarWidget({
       </div>
 
       {/* Footer — summary */}
-      {nights > 0 && (
-        <div className="border-t border-[var(--color-line-soft)] px-6 py-3 text-center">
-          <span className="text-[13px] font-medium text-[var(--color-ink)]">
-            {format(checkIn!, "M월 d일 (EEE)", { locale: ko })}
-            <span className="text-[var(--color-mute)] mx-2">→</span>
-            {format(checkOut!, "M월 d일 (EEE)", { locale: ko })}
-            <span className="ml-2 inline-flex h-[22px] items-center rounded-full bg-[var(--color-bg-tint)] px-2 text-[11px] font-semibold text-[var(--color-honey-700)] tracking-wide align-middle">
-              {nights}박
+      <div className="border-t border-[var(--color-line-soft)] px-6 py-3 text-center">
+        {(() => {
+          const previewEnd = checkOut ?? (checkIn && hovered && isAfter(hovered, checkIn) ? hovered : null);
+          const previewNights = checkIn && previewEnd ? differenceInCalendarDays(previewEnd, checkIn) : 0;
+          const isPreview = !checkOut && !!hovered;
+
+          if (!checkIn || previewNights <= 0) {
+            return (
+              <span className="text-[13px] text-[var(--color-mute)]">
+                날짜를 선택해 주세요
+              </span>
+            );
+          }
+
+          return (
+            <span className={`text-[13px] font-medium ${isPreview ? "text-[var(--color-ink-3)]" : "text-[var(--color-ink)]"}`}>
+              {format(checkIn, "M월 d일 (EEE)", { locale: ko })}
+              <span className="text-[var(--color-mute)] mx-2">→</span>
+              {format(previewEnd!, "M월 d일 (EEE)", { locale: ko })}
+              <span className={`ml-2 inline-flex h-[22px] items-center rounded-full px-2 text-[11px] font-semibold tracking-wide align-middle ${
+                isPreview
+                  ? "bg-[var(--color-line-soft)] text-[var(--color-ink-3)]"
+                  : "bg-[var(--color-bg-tint)] text-[var(--color-honey-700)]"
+              }`}>
+                {previewNights}박
+              </span>
             </span>
-          </span>
-        </div>
-      )}
+          );
+        })()}
+      </div>
     </motion.div>
   );
 }

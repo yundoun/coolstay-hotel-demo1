@@ -67,7 +67,7 @@ export function HeroBookingBar() {
   const closeCalendar = useCallback(() => setCalendarOpen(false), []);
 
   const query = new URLSearchParams({
-    step: region ? "2" : "1",
+    step: "2",
     checkIn,
     checkOut,
     adults: String(adults),
