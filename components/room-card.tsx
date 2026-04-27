@@ -30,7 +30,7 @@ export function RoomCard({ room, hotelId }: { room: Room; hotelId: string }) {
           <span className="text-[var(--color-mute)]">·</span>
           <span>최대 {room.maxOccupancy}인</span>
         </div>
-        <span className="t-label-caps mt-3 inline-block opacity-0 transition-opacity group-hover:opacity-100">
+        <span className="t-label-caps mt-3 inline-block opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100">
           예약하기 →
         </span>
       </div>
