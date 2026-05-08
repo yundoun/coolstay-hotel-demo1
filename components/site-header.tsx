@@ -3,12 +3,20 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
+
+const NAV_SECTIONS = [
+  { id: "greeting", label: "인사말" },
+  { id: "about", label: "호텔소개" },
+  { id: "reservation", label: "예약" },
+  { id: "location", label: "찾아오는 길" },
+];
 
 export function SiteHeader() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
+  const [activeSection, setActiveSection] = useState("");
   const isHome = pathname === "/";
 
   useEffect(() => {
@@ -24,7 +32,38 @@ export function SiteHeader() {
     return () => window.removeEventListener("scroll", onScroll);
   }, [isHome]);
 
+  // Track active section via IntersectionObserver
+  useEffect(() => {
+    if (!isHome) return;
+    const observers: IntersectionObserver[] = [];
+    const handleIntersect = (id: string) => (entries: IntersectionObserverEntry[]) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) setActiveSection(id);
+      });
+    };
+
+    NAV_SECTIONS.forEach(({ id }) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const observer = new IntersectionObserver(handleIntersect(id), {
+        rootMargin: "-40% 0px -50% 0px",
+        threshold: 0,
+      });
+      observer.observe(el);
+      observers.push(observer);
+    });
+
+    return () => observers.forEach((o) => o.disconnect());
+  }, [isHome]);
+
   const onDark = isHome && !scrolled;
+
+  const scrollTo = useCallback((id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, []);
 
   return (
     <header
@@ -53,25 +92,25 @@ export function SiteHeader() {
             )}
           />
           <span className="t-label-caps text-current opacity-80 hidden sm:inline">
-            Partner Hotels
+            소월 서울
           </span>
         </Link>
 
-        <nav className="flex items-center gap-10 text-[15px] font-medium">
-          <Link
-            href="/hotels"
-            className="nav-link"
-            data-active={pathname.startsWith("/hotels")}
-          >
-            호텔소개
-          </Link>
-          <Link
-            href="/reservation"
-            className="nav-link"
-            data-active={pathname.startsWith("/reservation")}
-          >
-            예약
-          </Link>
+        <nav className="flex items-center gap-6 md:gap-10 text-[15px] font-medium">
+          {NAV_SECTIONS.map(({ id, label }) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => scrollTo(id)}
+              className={cn(
+                "nav-link cursor-pointer bg-transparent border-none",
+                activeSection === id && "font-semibold",
+              )}
+              data-active={activeSection === id}
+            >
+              {label}
+            </button>
+          ))}
         </nav>
       </div>
     </header>

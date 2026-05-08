@@ -13,7 +13,7 @@ import {
   nightsBetween,
 } from "@/lib/utils";
 
-export function Step4Review() {
+export function Step4Review({ onPrev }: { onPrev?: () => void } = {}) {
   const s = useReservation();
   const router = useRouter();
   const [agree, setAgree] = useState(false);
@@ -142,9 +142,15 @@ export function Step4Review() {
         </label>
 
         <div className="flex items-center justify-between border-t border-[var(--color-line)] pt-8">
-          <Link href="/reservation?step=3" className="btn btn-secondary">
-            ← 이전
-          </Link>
+          {onPrev ? (
+            <button type="button" onClick={onPrev} className="btn btn-secondary">
+              ← 이전
+            </button>
+          ) : (
+            <Link href="/reservation?step=3" className="btn btn-secondary">
+              ← 이전
+            </Link>
+          )}
           <button
             type="button"
             onClick={onConfirm}

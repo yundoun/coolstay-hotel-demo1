@@ -9,7 +9,7 @@ import { cn, krw, nightsBetween } from "@/lib/utils";
 import type { Room } from "@/lib/types";
 import { AnimatePresence, motion } from "framer-motion";
 
-export function Step2Hotel() {
+export function Step2Hotel({ onNext, onPrev }: { onNext?: () => void; onPrev?: () => void } = {}) {
   const s = useReservation();
   const nights = nightsBetween(s.checkIn, s.checkOut);
 
@@ -117,9 +117,15 @@ export function Step2Hotel() {
 
       {/* Inline nav */}
       <div className="mt-16 flex items-center border-t border-[var(--color-line)] pt-8">
-        <Link href="/reservation?step=1" className="btn btn-secondary">
-          ← 이전
-        </Link>
+        {onPrev ? (
+          <button type="button" onClick={onPrev} className="btn btn-secondary">
+            ← 이전
+          </button>
+        ) : (
+          <Link href="/reservation?step=1" className="btn btn-secondary">
+            ← 이전
+          </Link>
+        )}
       </div>
 
       {/* Sticky bottom bar */}
@@ -152,12 +158,18 @@ export function Step2Hotel() {
                   </div>
                 </div>
               </div>
-              <Link
-                href="/reservation?step=3"
-                className="btn btn-primary shrink-0"
-              >
-                다음 단계 →
-              </Link>
+              {onNext ? (
+                <button type="button" onClick={onNext} className="btn btn-primary shrink-0">
+                  다음 단계 →
+                </button>
+              ) : (
+                <Link
+                  href="/reservation?step=3"
+                  className="btn btn-primary shrink-0"
+                >
+                  다음 단계 →
+                </Link>
+              )}
             </div>
           </motion.div>
         )}

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useReservation } from "@/lib/reservation-store";
 import { formatKoDate, nightsBetween, todayISO } from "@/lib/utils";
 
-export function Step1Dates() {
+export function Step1Dates({ onNext }: { onNext?: () => void } = {}) {
   const s = useReservation();
   const nights = nightsBetween(s.checkIn, s.checkOut);
   const canNext = nights > 0;
@@ -87,16 +87,27 @@ export function Step1Dates() {
         <Link href="/" className="btn-tertiary">
           ← 홈으로
         </Link>
-        <Link
-          href="/reservation?step=2"
-          aria-disabled={!canNext}
-          onClick={(e) => {
-            if (!canNext) e.preventDefault();
-          }}
-          className={canNext ? "btn btn-primary" : "btn btn-primary opacity-40 pointer-events-none"}
-        >
-          호텔 선택 →
-        </Link>
+        {onNext ? (
+          <button
+            type="button"
+            onClick={onNext}
+            disabled={!canNext}
+            className="btn btn-primary disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            객실 선택 →
+          </button>
+        ) : (
+          <Link
+            href="/reservation?step=2"
+            aria-disabled={!canNext}
+            onClick={(e) => {
+              if (!canNext) e.preventDefault();
+            }}
+            className={canNext ? "btn btn-primary" : "btn btn-primary opacity-40 pointer-events-none"}
+          >
+            객실 선택 →
+          </Link>
+        )}
       </div>
     </div>
   );

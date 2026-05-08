@@ -22,7 +22,7 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
-export function Step3Guest() {
+export function Step3Guest({ onNext, onPrev }: { onNext?: () => void; onPrev?: () => void } = {}) {
   const s = useReservation();
   const router = useRouter();
   const hotel = s.hotelId ? getHotel(s.hotelId) : null;
@@ -47,7 +47,8 @@ export function Step3Guest() {
 
   const onSubmit = handleSubmit((values) => {
     s.setGuestInfo(values);
-    router.push("/reservation?step=4");
+    if (onNext) onNext();
+    else router.push("/reservation?step=4");
   });
 
   return (
@@ -117,9 +118,15 @@ export function Step3Guest() {
 
         {/* Nav */}
         <div className="lg:col-span-2 mt-4 flex items-center justify-between border-t border-[var(--color-line)] pt-8">
-          <Link href="/reservation?step=2" className="btn btn-secondary">
-            ← 이전
-          </Link>
+          {onPrev ? (
+            <button type="button" onClick={onPrev} className="btn btn-secondary">
+              ← 이전
+            </button>
+          ) : (
+            <Link href="/reservation?step=2" className="btn btn-secondary">
+              ← 이전
+            </Link>
+          )}
           <button
             type="submit"
             disabled={!isValid}
