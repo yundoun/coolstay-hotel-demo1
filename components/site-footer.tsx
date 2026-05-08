@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { siteHotel } from "@/lib/hotels";
 
 export function SiteFooter() {
   return (
@@ -14,34 +15,34 @@ export function SiteFooter() {
               className="h-[24px] w-auto"
             />
             <span className="t-label-caps text-[var(--color-ink-3)]">
-              Partner Hotels Demo
+              {siteHotel.name}
             </span>
           </div>
           <div className="grid grid-cols-1 gap-x-12 gap-y-2 text-[13px] text-[var(--color-ink-3)] md:grid-cols-3 md:text-right">
             <div>
               <span className="t-label-caps block text-[var(--color-mute)]">
-                Inquiry
+                Phone
               </span>
-              partners@coolstay.kr
+              {siteHotel.phone}
             </div>
             <div>
               <span className="t-label-caps block text-[var(--color-mute)]">
-                Phone
+                Check-in · out
               </span>
-              1522-0000
+              {siteHotel.checkInTime} · {siteHotel.checkOutTime}
             </div>
             <div>
               <span className="t-label-caps block text-[var(--color-mute)]">
                 Address
               </span>
-              서울 강남구 테헤란로 123
+              {siteHotel.address}
             </div>
           </div>
         </div>
         <div className="mt-12 flex flex-col gap-2 border-t border-[var(--color-line)] pt-6 text-[12px] text-[var(--color-mute)] md:flex-row md:items-center md:justify-between">
-          <span>© 2026 CoolStay Corp. All rights reserved.</span>
+          <span>© 2026 {siteHotel.name}. All rights reserved.</span>
           <span className="t-label-caps">
-            CoolStay × Luxury Hotels
+            Powered by CoolStay
           </span>
         </div>
       </div>

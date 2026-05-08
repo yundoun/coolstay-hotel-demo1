@@ -4,6 +4,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef } from "react";
 import { StepIndicator } from "@/components/step-indicator";
 import { useReservation } from "@/lib/reservation-store";
+import { SITE_HOTEL_ID } from "@/lib/hotels";
 import { Step1Dates } from "./step-1-dates";
 import { Step2Hotel } from "./step-2-hotel";
 import { Step3Guest } from "./step-3-guest";
@@ -37,7 +38,7 @@ export function ReservationShell() {
     const roomId = search.get("roomId");
     if (ci && co) store.setDates(ci, co);
     if (a || c) store.setGuests(Number(a ?? store.adults), Number(c ?? store.children));
-    if (hotelId) store.setHotel(hotelId);
+    store.setHotel(hotelId ?? SITE_HOTEL_ID);
     if (roomId) store.setRoom(roomId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

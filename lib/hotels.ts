@@ -760,3 +760,10 @@ export function getRegionCounts(): Record<string, number> {
   }
   return counts;
 }
+
+// ──────────────────────────────────────────────────────────
+// Single-hotel site mode
+// ──────────────────────────────────────────────────────────
+export const SITE_HOTEL_ID = "sowol-seoul";
+export const siteHotel = getHotel(SITE_HOTEL_ID)!;
+export const siteRooms = getHotelRooms(SITE_HOTEL_ID);

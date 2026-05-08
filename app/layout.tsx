@@ -21,9 +21,9 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "꿀스테이 — 파트너 호텔",
+  title: "소월 서울 — 꿀스테이",
   description:
-    "꿀스테이 제휴 호텔 예약. 국내 주요 지역의 엄선된 여섯 개 럭셔리 호텔을 소개합니다.",
+    "남산 아래 도심 속 어반 생크추어리, 소월 서울. 온라인 객실 예약.",
 };
 
 export default function RootLayout({

@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { addDaysISO, todayISO } from "./utils";
+import { SITE_HOTEL_ID } from "./hotels";
 
 export type ReservationState = {
   // Step 1
@@ -40,7 +41,7 @@ export const useReservation = create<ReservationState>()(
       checkOut: defaultCheckOut,
       adults: 2,
       children: 0,
-      hotelId: null,
+      hotelId: SITE_HOTEL_ID,
       roomId: null,
       guestName: "",
       guestPhone: "",
@@ -65,7 +66,7 @@ export const useReservation = create<ReservationState>()(
           checkOut: defaultCheckOut,
           adults: 2,
           children: 0,
-          hotelId: null,
+          hotelId: SITE_HOTEL_ID,
           roomId: null,
           guestName: "",
           guestPhone: "",

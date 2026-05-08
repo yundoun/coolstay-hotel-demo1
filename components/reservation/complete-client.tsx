@@ -121,9 +121,6 @@ export function ReservationCompleteClient() {
             <Link href="/" className="btn-tertiary">
               홈으로 돌아가기
             </Link>
-            <Link href="/hotels" className="btn-tertiary">
-              다른 호텔 둘러보기
-            </Link>
           </div>
         </div>
       </section>
