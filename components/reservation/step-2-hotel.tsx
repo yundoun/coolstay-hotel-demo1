@@ -115,65 +115,72 @@ export function Step2Hotel({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
         </div>
       </section>
 
-      {/* Inline nav */}
-      <div className="mt-16 flex items-center border-t border-[var(--color-line)] pt-8">
-        {onPrev ? (
+      {/* Nav */}
+      {onNext ? (
+        /* 인라인 모드: 이전/다음 버튼 나란히 */
+        <div className="mt-16 flex items-center justify-between border-t border-[var(--color-line)] pt-8">
           <button type="button" onClick={onPrev} className="btn btn-secondary">
             ← 이전
           </button>
-        ) : (
-          <Link href="/reservation?step=1" className="btn btn-secondary">
-            ← 이전
-          </Link>
-        )}
-      </div>
-
-      {/* Sticky bottom bar */}
-      <AnimatePresence>
-        {canNext && selectedRoom && (
-          <motion.div
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-            className="fixed inset-x-0 bottom-0 z-50 border-t border-[var(--color-line)] bg-white/95 backdrop-blur-sm shadow-[0_-4px_24px_rgba(0,0,0,0.08)]"
+          <button
+            type="button"
+            onClick={onNext}
+            disabled={!canNext}
+            className="btn btn-primary disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            <div className="mx-auto flex max-w-[1240px] items-center justify-between gap-4 px-[var(--page-gutter)] py-4">
-              <div className="flex items-center gap-4 min-w-0">
-                <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-[2px] bg-[var(--color-line-soft)]">
-                  <Image
-                    src={siteHotel.heroImage}
-                    alt={siteHotel.name}
-                    fill
-                    sizes="48px"
-                    className="object-cover"
-                  />
-                </div>
-                <div className="min-w-0">
-                  <div className="t-body-sm font-semibold truncate">
-                    {selectedRoom.name}
+            다음 단계 →
+          </button>
+        </div>
+      ) : (
+        <>
+          {/* 페이지 모드: 이전 버튼 + sticky 하단 바 */}
+          <div className="mt-16 flex items-center border-t border-[var(--color-line)] pt-8">
+            <Link href="/reservation?step=1" className="btn btn-secondary">
+              ← 이전
+            </Link>
+          </div>
+
+          <AnimatePresence>
+            {canNext && selectedRoom && (
+              <motion.div
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+                className="fixed inset-x-0 bottom-0 z-50 border-t border-[var(--color-line)] bg-white/95 backdrop-blur-sm shadow-[0_-4px_24px_rgba(0,0,0,0.08)]"
+              >
+                <div className="mx-auto flex max-w-[1240px] items-center justify-between gap-4 px-[var(--page-gutter)] py-4">
+                  <div className="flex items-center gap-4 min-w-0">
+                    <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-[2px] bg-[var(--color-line-soft)]">
+                      <Image
+                        src={siteHotel.heroImage}
+                        alt={siteHotel.name}
+                        fill
+                        sizes="48px"
+                        className="object-cover"
+                      />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="t-body-sm font-semibold truncate">
+                        {selectedRoom.name}
+                      </div>
+                      <div className="t-caption text-[var(--color-ink-3)] truncate">
+                        {nights}박 · {krw(total)}
+                      </div>
+                    </div>
                   </div>
-                  <div className="t-caption text-[var(--color-ink-3)] truncate">
-                    {nights}박 · {krw(total)}
-                  </div>
+                  <Link
+                    href="/reservation?step=3"
+                    className="btn btn-primary shrink-0"
+                  >
+                    다음 단계 →
+                  </Link>
                 </div>
-              </div>
-              {onNext ? (
-                <button type="button" onClick={onNext} className="btn btn-primary shrink-0">
-                  다음 단계 →
-                </button>
-              ) : (
-                <Link
-                  href="/reservation?step=3"
-                  className="btn btn-primary shrink-0"
-                >
-                  다음 단계 →
-                </Link>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </>
+      )}
     </div>
   );
 }
