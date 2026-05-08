@@ -2,15 +2,12 @@
 
 import { useCallback } from "react";
 import { RoomShowcase } from "@/components/room-showcase";
-import { useReservation } from "@/lib/reservation-store";
-import { SITE_HOTEL_ID } from "@/lib/hotels";
 import type { Room } from "@/lib/types";
 
 /**
  * Onepage 전용 RoomShowcase 래퍼.
- * 객실 클릭 시 페이지 이동 없이:
- * 1. 스토어에 hotelId + roomId 세팅
- * 2. #reservation 섹션으로 스크롤
+ * 객실 클릭 시 #reservation 섹션으로 스크롤만 수행.
+ * 객실 선택은 예약 플로우 Step 2에서 직접 하도록 위임.
  */
 export function OnepageRoomShowcase({
   rooms,
@@ -19,23 +16,12 @@ export function OnepageRoomShowcase({
   rooms: Room[];
   hotelId: string;
 }) {
-  const store = useReservation();
-
-  const handleRoomSelect = useCallback(
-    (roomId: string) => {
-      store.setHotel(SITE_HOTEL_ID);
-      store.setRoom(roomId);
-
-      // 스크롤 후 약간의 딜레이로 자연스럽게
-      setTimeout(() => {
-        const el = document.getElementById("reservation");
-        if (el) {
-          el.scrollIntoView({ behavior: "smooth", block: "start" });
-        }
-      }, 100);
-    },
-    [store],
-  );
+  const handleRoomSelect = useCallback((_roomId: string) => {
+    const el = document.getElementById("reservation");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, []);
 
   return (
     <RoomShowcase
