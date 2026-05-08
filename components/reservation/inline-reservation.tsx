@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { StepIndicator } from "@/components/step-indicator";
 import { Step1Dates } from "./step-1-dates";
 import { Step2Hotel } from "./step-2-hotel";
@@ -17,16 +17,25 @@ type Step = 1 | 2 | 3 | 4;
 export function InlineReservation() {
   const [step, setStep] = useState<Step>(1);
 
+  const goTo = useCallback((next: Step) => {
+    setStep(next);
+    // Step 전환 시 예약 섹션 상단으로 스크롤
+    setTimeout(() => {
+      const el = document.getElementById("reservation");
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
+  }, []);
+
   const content = (() => {
     switch (step) {
       case 1:
-        return <Step1Dates onNext={() => setStep(2)} />;
+        return <Step1Dates onNext={() => goTo(2)} />;
       case 2:
-        return <Step2Hotel onNext={() => setStep(3)} onPrev={() => setStep(1)} />;
+        return <Step2Hotel onNext={() => goTo(3)} onPrev={() => goTo(1)} />;
       case 3:
-        return <Step3Guest onNext={() => setStep(4)} onPrev={() => setStep(2)} />;
+        return <Step3Guest onNext={() => goTo(4)} onPrev={() => goTo(2)} />;
       case 4:
-        return <Step4Review onPrev={() => setStep(3)} />;
+        return <Step4Review onPrev={() => goTo(3)} />;
     }
   })();
 

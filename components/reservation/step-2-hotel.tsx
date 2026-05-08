@@ -13,10 +13,12 @@ export function Step2Hotel({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
   const s = useReservation();
   const nights = nightsBetween(s.checkIn, s.checkOut);
 
-  // Auto-select the site hotel
+  // Auto-select the site hotel + reset room selection
   useEffect(() => {
     if (s.hotelId !== SITE_HOTEL_ID) {
-      s.setHotel(SITE_HOTEL_ID);
+      s.setHotel(SITE_HOTEL_ID); // also resets roomId
+    } else {
+      s.setRoom(null); // clear stale roomId from sessionStorage
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -24,6 +26,7 @@ export function Step2Hotel({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
   const canNext = Boolean(s.roomId && nights > 0);
   const selectedRoom = s.roomId ? getRoom(s.roomId) : null;
   const total = selectedRoom && nights > 0 ? selectedRoom.basePrice * nights : 0;
+
 
   return (
     <div className="mx-auto w-full max-w-[1240px]">
