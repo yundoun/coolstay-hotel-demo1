@@ -16,9 +16,12 @@ import { cn, krw } from "@/lib/utils";
 export function RoomShowcase({
   rooms,
   hotelId,
+  onRoomSelect,
 }: {
   rooms: Room[];
   hotelId: string;
+  /** 제공 시 Link 대신 콜백 사용 (onepage 모드) */
+  onRoomSelect?: (roomId: string) => void;
 }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -111,7 +114,7 @@ export function RoomShowcase({
                 i === activeIndex ? "opacity-100" : "opacity-40",
               )}
             >
-              <RoomInfoCard room={room} hotelId={hotelId} active={i === activeIndex} />
+              <RoomInfoCard room={room} hotelId={hotelId} active={i === activeIndex} onSelect={onRoomSelect} />
             </div>
           ))}
         </div>
@@ -120,7 +123,7 @@ export function RoomShowcase({
       {/* ── Mobile: 카드 리스트 ── */}
       <div className="flex flex-col gap-8 md:hidden">
         {rooms.map((room) => (
-          <MobileRoomCard key={room.id} room={room} hotelId={hotelId} />
+          <MobileRoomCard key={room.id} room={room} hotelId={hotelId} onSelect={onRoomSelect} />
         ))}
       </div>
     </>
@@ -132,10 +135,12 @@ function RoomInfoCard({
   room,
   hotelId,
   active,
+  onSelect,
 }: {
   room: Room;
   hotelId: string;
   active: boolean;
+  onSelect?: (roomId: string) => void;
 }) {
   const href = `/reservation?step=1&hotelId=${hotelId}&roomId=${room.id}`;
 
@@ -189,27 +194,52 @@ function RoomInfoCard({
       </ul>
 
       {/* CTA */}
-      <Link
-        href={href}
-        className={cn(
-          "mt-8 flex items-center justify-center h-[48px] w-full rounded-[2px] t-button transition-all duration-300",
-          active
-            ? "bg-[var(--color-ink)] text-white hover:bg-[var(--color-ink-2)]"
-            : "border border-[var(--color-line)] text-[var(--color-ink)] hover:border-[var(--color-ink)]",
-        )}
-      >
-        예약하기 →
-      </Link>
+      {onSelect ? (
+        <button
+          type="button"
+          onClick={() => onSelect(room.id)}
+          className={cn(
+            "mt-8 flex items-center justify-center h-[48px] w-full rounded-[2px] t-button transition-all duration-300 cursor-pointer",
+            active
+              ? "bg-[var(--color-ink)] text-white hover:bg-[var(--color-ink-2)]"
+              : "border border-[var(--color-line)] text-[var(--color-ink)] hover:border-[var(--color-ink)]",
+          )}
+        >
+          이 객실로 예약 →
+        </button>
+      ) : (
+        <Link
+          href={href}
+          className={cn(
+            "mt-8 flex items-center justify-center h-[48px] w-full rounded-[2px] t-button transition-all duration-300",
+            active
+              ? "bg-[var(--color-ink)] text-white hover:bg-[var(--color-ink-2)]"
+              : "border border-[var(--color-line)] text-[var(--color-ink)] hover:border-[var(--color-ink)]",
+          )}
+        >
+          예약하기 →
+        </Link>
+      )}
     </div>
   );
 }
 
 /* ── 모바일 카드 ── */
-function MobileRoomCard({ room, hotelId }: { room: Room; hotelId: string }) {
+function MobileRoomCard({ room, hotelId, onSelect }: { room: Room; hotelId: string; onSelect?: (roomId: string) => void }) {
   const href = `/reservation?step=1&hotelId=${hotelId}&roomId=${room.id}`;
 
+  const Wrapper = onSelect
+    ? ({ children, className }: { children: React.ReactNode; className?: string }) => (
+        <button type="button" onClick={() => onSelect(room.id)} className={`${className} text-left w-full`}>
+          {children}
+        </button>
+      )
+    : ({ children, className }: { children: React.ReactNode; className?: string }) => (
+        <Link href={href} className={className}>{children}</Link>
+      );
+
   return (
-    <Link href={href} className="group block">
+    <Wrapper className="group block">
       <div className="overflow-hidden rounded-[2px] border border-[var(--color-line)] bg-white">
         <div className="relative aspect-[16/10] overflow-hidden bg-[var(--color-line-soft)]">
           <Image
@@ -248,7 +278,7 @@ function MobileRoomCard({ room, hotelId }: { room: Room; hotelId: string }) {
           </div>
         </div>
       </div>
-    </Link>
+    </Wrapper>
   );
 }
 

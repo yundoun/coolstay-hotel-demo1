@@ -3,7 +3,7 @@ import { siteHotel, siteRooms } from "@/lib/hotels";
 import { siteContent } from "@/lib/site-content";
 import { Reveal } from "@/components/reveal";
 import { AboutBlocks } from "@/components/about-blocks";
-import { RoomShowcase } from "@/components/room-showcase";
+import { OnepageRoomShowcase } from "@/components/onepage-room-showcase";
 import { OnepageReservation } from "@/components/onepage-reservation";
 import { MapPin, Clock, Phone, Car, Train } from "lucide-react";
 
@@ -100,7 +100,7 @@ export default function HomePage() {
               </p>
             </Reveal>
           </div>
-          <RoomShowcase rooms={siteRooms} hotelId={siteHotel.id} />
+          <OnepageRoomShowcase rooms={siteRooms} hotelId={siteHotel.id} />
         </div>
       </section>
 
