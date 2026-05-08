@@ -31,7 +31,7 @@ export type Room = {
   maxOccupancy: number;
   basePrice: number;
   currency: "KRW";
-  tier: "DELUXE" | "PREMIER" | "SUITE" | "SIGNATURE";
+  tier: "STANDARD" | "DELUXE" | "DELUXE_TWIN" | "PREMIER" | "PREMIER_TWIN" | "FAMILY" | "JUNIOR_SUITE" | "SIGNATURE" | "SUITE" | "ONDOL";
 };
 
 export type Reservation = {

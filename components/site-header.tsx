@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 const NAV_SECTIONS = [
   { id: "greeting", label: "인사말" },
   { id: "about", label: "호텔소개" },
+  { id: "rooms", label: "객실" },
   { id: "reservation", label: "예약" },
   { id: "location", label: "찾아오는 길" },
 ];

@@ -642,55 +642,164 @@ export const hotels: Hotel[] = HOTEL_SPECS.map((spec) => {
 });
 
 // ──────────────────────────────────────────────────────────
-// Rooms — every hotel has 3 rooms: Deluxe, Premier, Suite/Signature.
+// Rooms — 호텔당 최대 10개 객실.
+// 기본 프리셋 3개 + 사이트 호텔용 확장 프리셋.
 // Prices vary by region × grade so the demo has realistic diversity.
 // ──────────────────────────────────────────────────────────
 
-const PRICE_MATRIX: Record<string, { deluxe: number; premier: number; suite: number }> = {
-  "수도권-5": { deluxe: 380000, premier: 540000, suite: 920000 },
-  "수도권-4": { deluxe: 260000, premier: 380000, suite: 620000 },
-  "영남-5": { deluxe: 420000, premier: 600000, suite: 960000 },
-  "영남-4": { deluxe: 280000, premier: 400000, suite: 640000 },
-  "호남-5": { deluxe: 360000, premier: 520000, suite: 880000 },
-  "호남-4": { deluxe: 240000, premier: 360000, suite: 580000 },
-  "제주-5": { deluxe: 480000, premier: 680000, suite: 1180000 },
-  "제주-4": { deluxe: 320000, premier: 460000, suite: 720000 },
-  "강원-5": { deluxe: 460000, premier: 640000, suite: 1080000 },
-  "강원-4": { deluxe: 260000, premier: 380000, suite: 620000 },
+type PriceSet = {
+  standard: number; deluxe: number; deluxe_twin: number;
+  premier: number; premier_twin: number; family: number;
+  junior_suite: number; suite: number;
 };
 
-const ROOM_PRESETS = [
+const PRICE_MATRIX: Record<string, PriceSet> = {
+  "수도권-5": { standard: 280000, deluxe: 380000, deluxe_twin: 400000, premier: 540000, premier_twin: 560000, family: 620000, junior_suite: 720000, suite: 920000 },
+  "수도권-4": { standard: 180000, deluxe: 260000, deluxe_twin: 280000, premier: 380000, premier_twin: 400000, family: 440000, junior_suite: 500000, suite: 620000 },
+  "영남-5": { standard: 320000, deluxe: 420000, deluxe_twin: 440000, premier: 600000, premier_twin: 620000, family: 680000, junior_suite: 780000, suite: 960000 },
+  "영남-4": { standard: 200000, deluxe: 280000, deluxe_twin: 300000, premier: 400000, premier_twin: 420000, family: 460000, junior_suite: 520000, suite: 640000 },
+  "호남-5": { standard: 260000, deluxe: 360000, deluxe_twin: 380000, premier: 520000, premier_twin: 540000, family: 600000, junior_suite: 700000, suite: 880000 },
+  "호남-4": { standard: 160000, deluxe: 240000, deluxe_twin: 260000, premier: 360000, premier_twin: 380000, family: 420000, junior_suite: 460000, suite: 580000 },
+  "제주-5": { standard: 360000, deluxe: 480000, deluxe_twin: 500000, premier: 680000, premier_twin: 700000, family: 780000, junior_suite: 900000, suite: 1180000 },
+  "제주-4": { standard: 240000, deluxe: 320000, deluxe_twin: 340000, premier: 460000, premier_twin: 480000, family: 540000, junior_suite: 580000, suite: 720000 },
+  "강원-5": { standard: 340000, deluxe: 460000, deluxe_twin: 480000, premier: 640000, premier_twin: 660000, family: 740000, junior_suite: 860000, suite: 1080000 },
+  "강원-4": { standard: 180000, deluxe: 260000, deluxe_twin: 280000, premier: 380000, premier_twin: 400000, family: 440000, junior_suite: 500000, suite: 620000 },
+};
+
+type RoomPreset = {
+  tier: Room["tier"];
+  name: string;
+  concept: string;
+  sizeSqm: number;
+  bedType: Room["bedType"];
+  maxOccupancy: number;
+  amenities: string[];
+  priceKey: keyof PriceSet;
+  imageKey: "deluxe" | "premier" | "suite";
+};
+
+/** 기본 3개 프리셋 — 모든 호텔 공통 */
+const BASE_PRESETS: RoomPreset[] = [
   {
-    tier: "DELUXE" as const,
+    tier: "DELUXE",
     name: "디럭스 룸",
     concept: "호텔의 시그니처 뷰를 정면에 두는 객실",
     sizeSqm: 38,
-    bedType: "킹" as const,
+    bedType: "킹",
     maxOccupancy: 2,
     amenities: ["무료 Wi-Fi", "네스프레소", "욕조", "웰컴 어메니티"],
-    roomKey: "deluxe" as const,
+    priceKey: "deluxe",
+    imageKey: "deluxe",
   },
   {
-    tier: "PREMIER" as const,
+    tier: "PREMIER",
     name: "프리미어 룸",
     concept: "거실이 분리된 넉넉한 프리미어 공간",
     sizeSqm: 58,
-    bedType: "킹" as const,
+    bedType: "킹",
     maxOccupancy: 3,
     amenities: ["거실 분리", "에스프레소 머신", "욕조", "레이트 체크아웃"],
-    roomKey: "premier" as const,
+    priceKey: "premier",
+    imageKey: "premier",
   },
   {
-    tier: "SIGNATURE" as const,
+    tier: "SIGNATURE",
     name: "시그니처 스위트",
     concept: "파노라마와 프라이버시가 만나는 최상위 스위트",
     sizeSqm: 96,
-    bedType: "슈퍼킹" as const,
+    bedType: "슈퍼킹",
     maxOccupancy: 4,
     amenities: ["프라이빗 버틀러", "다이닝·거실 분리", "욕조 & 샤워부스", "공항 리무진"],
-    roomKey: "suite" as const,
+    priceKey: "suite",
+    imageKey: "suite",
   },
 ];
+
+/** 사이트 호텔 전용 확장 프리셋 — 7개 (기본 3 + 추가 4) */
+const SITE_HOTEL_PRESETS: RoomPreset[] = [
+  {
+    tier: "STANDARD",
+    name: "스탠다드 룸",
+    concept: "깔끔하고 기능적인 비즈니스 스테이",
+    sizeSqm: 28,
+    bedType: "더블",
+    maxOccupancy: 2,
+    amenities: ["무료 Wi-Fi", "미니바", "샤워부스", "워크데스크"],
+    priceKey: "standard",
+    imageKey: "deluxe",
+  },
+  {
+    tier: "DELUXE",
+    name: "디럭스 킹",
+    concept: "호텔의 시그니처 뷰를 정면에 두는 객실",
+    sizeSqm: 38,
+    bedType: "킹",
+    maxOccupancy: 2,
+    amenities: ["무료 Wi-Fi", "네스프레소", "욕조", "웰컴 어메니티"],
+    priceKey: "deluxe",
+    imageKey: "deluxe",
+  },
+  {
+    tier: "DELUXE_TWIN",
+    name: "디럭스 트윈",
+    concept: "두 개의 싱글베드로 자유롭게 구성한 디럭스",
+    sizeSqm: 40,
+    bedType: "트윈",
+    maxOccupancy: 2,
+    amenities: ["무료 Wi-Fi", "네스프레소", "욕조", "웰컴 어메니티"],
+    priceKey: "deluxe_twin",
+    imageKey: "deluxe",
+  },
+  {
+    tier: "PREMIER",
+    name: "프리미어 킹",
+    concept: "거실이 분리된 넉넉한 프리미어 공간",
+    sizeSqm: 58,
+    bedType: "킹",
+    maxOccupancy: 3,
+    amenities: ["거실 분리", "에스프레소 머신", "욕조", "레이트 체크아웃"],
+    priceKey: "premier",
+    imageKey: "premier",
+  },
+  {
+    tier: "FAMILY",
+    name: "패밀리 스위트",
+    concept: "아이와 함께하는 가족을 위한 넓은 공간",
+    sizeSqm: 72,
+    bedType: "킹",
+    maxOccupancy: 4,
+    amenities: ["키즈 어메니티", "거실 분리", "욕조", "미니 주방"],
+    priceKey: "family",
+    imageKey: "premier",
+  },
+  {
+    tier: "JUNIOR_SUITE",
+    name: "주니어 스위트",
+    concept: "스위트의 여유를 합리적으로 누리는 선택",
+    sizeSqm: 68,
+    bedType: "킹",
+    maxOccupancy: 3,
+    amenities: ["거실·침실 분리", "에스프레소 머신", "욕조 & 샤워부스", "웰컴 과일"],
+    priceKey: "junior_suite",
+    imageKey: "suite",
+  },
+  {
+    tier: "SIGNATURE",
+    name: "시그니처 스위트",
+    concept: "파노라마와 프라이버시가 만나는 최상위 스위트",
+    sizeSqm: 96,
+    bedType: "슈퍼킹",
+    maxOccupancy: 4,
+    amenities: ["프라이빗 버틀러", "다이닝·거실 분리", "욕조 & 샤워부스", "공항 리무진"],
+    priceKey: "suite",
+    imageKey: "suite",
+  },
+];
+
+/** 호텔별 프리셋 오버라이드 맵 */
+const HOTEL_ROOM_OVERRIDES: Record<string, RoomPreset[]> = {
+  "sowol-seoul": SITE_HOTEL_PRESETS,
+};
 
 function viewForHotel(h: Hotel): Record<string, string> {
   const pool = HOTEL_SPECS.find((s) => s.id === h.id)!.pool;
@@ -710,23 +819,24 @@ export const rooms: Room[] = hotels.flatMap((h) => {
   const prices = PRICE_MATRIX[priceKey] ?? PRICE_MATRIX["수도권-4"];
   const { view } = viewForHotel(h);
   const pool = POOLS[HOTEL_SPECS.find((s) => s.id === h.id)!.pool];
+  const presets = HOTEL_ROOM_OVERRIDES[h.id] ?? BASE_PRESETS;
 
-  return ROOM_PRESETS.map((preset) => ({
-    id: `${h.id}-${preset.tier.toLowerCase()}`,
+  return presets.map((preset, idx) => ({
+    id: `${h.id}-${preset.tier.toLowerCase()}${presets.filter((p, j) => j < idx && p.tier === preset.tier).length > 0 ? `-${idx}` : ""}`,
     hotelId: h.id,
     name: preset.name,
     concept: preset.concept,
-    sizeSqm: preset.tier === "SIGNATURE" ? 96 : preset.tier === "PREMIER" ? 58 : 38,
+    sizeSqm: preset.sizeSqm,
     bedType: preset.bedType,
     view,
     images: [
-      pool.rooms[preset.roomKey],
+      pool.rooms[preset.imageKey],
       pool.gallery[0],
       pool.gallery[1],
     ],
     amenities: preset.amenities,
     maxOccupancy: preset.maxOccupancy,
-    basePrice: prices[preset.roomKey],
+    basePrice: prices[preset.priceKey],
     currency: "KRW" as const,
     tier: preset.tier,
   }));
