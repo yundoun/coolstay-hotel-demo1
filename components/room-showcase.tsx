@@ -205,7 +205,7 @@ function RoomInfoCard({
               : "border border-[var(--color-line)] text-[var(--color-ink)] hover:border-[var(--color-ink)]",
           )}
         >
-          이 객실로 예약 →
+          예약하기 →
         </button>
       ) : (
         <Link

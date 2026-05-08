@@ -105,25 +105,27 @@ export default function HomePage() {
       </section>
 
       {/* ============== 예약 (임베디드) ============== */}
-      <section id="reservation" className="bg-[var(--color-bg-soft)] py-[120px]">
-        <div className="container-page text-center mb-[64px]">
-          <Reveal>
-            <span className="eyebrow">Reservation</span>
-          </Reveal>
-          <Reveal delay={0.05}>
-            <h2 className="t-h2 mt-6">온라인 예약</h2>
-          </Reveal>
-          <Reveal delay={0.1}>
-            <p className="t-body mt-4 text-[var(--color-ink-3)]">
-              아래에서 일정과 객실을 선택하고 바로 예약하세요.
-            </p>
-          </Reveal>
+      <section id="reservation" className="py-[120px]">
+        <div className="container-page">
+          <div className="border-t border-[var(--color-line)] pt-[120px] text-center mb-[64px]">
+            <Reveal>
+              <span className="eyebrow">Reservation</span>
+            </Reveal>
+            <Reveal delay={0.05}>
+              <h2 className="t-h2 mt-6">온라인 예약</h2>
+            </Reveal>
+            <Reveal delay={0.1}>
+              <p className="t-body mt-4 text-[var(--color-ink-3)]">
+                일정과 객실을 선택하고 바로 예약하세요.
+              </p>
+            </Reveal>
+          </div>
+          <OnepageReservation />
         </div>
-        <OnepageReservation />
       </section>
 
       {/* ============== 찾아오는 길 ============== */}
-      <section id="location" className="py-[120px]">
+      <section id="location" className="bg-[var(--color-bg-soft)] py-[120px]">
         <div className="container-page">
           <div className="text-center mb-[64px]">
             <Reveal>
