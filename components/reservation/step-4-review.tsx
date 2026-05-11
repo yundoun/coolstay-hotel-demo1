@@ -6,9 +6,9 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useReservation } from "@/lib/reservation-store";
 import { getHotel, getRoom } from "@/lib/hotels";
+import { createGuestReservation } from "@/lib/reservation-api";
 import {
   formatKoDate,
-  generateReservationNumber,
   krw,
   nightsBetween,
 } from "@/lib/utils";
@@ -18,22 +18,49 @@ export function Step4Review({ onPrev }: { onPrev?: () => void } = {}) {
   const router = useRouter();
   const [agree, setAgree] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const hotel = s.hotelId ? getHotel(s.hotelId) : null;
   const room = s.roomId ? getRoom(s.roomId) : null;
   const nights = nightsBetween(s.checkIn, s.checkOut);
-  const total = room ? room.basePrice * nights : 0;
 
-  if (!hotel || !room) return null;
+  // API 연동 모드: apiPackageKey가 있으면 실제 API 가격/키 사용
+  const isApiMode = Boolean(s.apiPackageKey);
+  const total = isApiMode ? (s.apiPrice ?? 0) : (room ? room.basePrice * nights : 0);
+  const displayRoomName = isApiMode ? s.apiRoomName : room?.name;
+  const displayCheckInTime = isApiMode ? `${s.apiCheckInTime}:00` : hotel?.checkInTime;
+  const displayCheckOutTime = isApiMode ? `${s.apiCheckOutTime}:00` : hotel?.checkOutTime;
 
-  const onConfirm = () => {
-    if (!agree || submitting) return;
+  if (!hotel) return null;
+  if (!isApiMode && !room) return null;
+
+  const onConfirm = async () => {
+    if (!agree || submitting || !hotel) return;
+    if (!isApiMode && !room) return;
     setSubmitting(true);
-    const num = generateReservationNumber();
-    s.setReservationNumber(num);
-    setTimeout(() => {
+    setError(null);
+
+    try {
+      const result = await createGuestReservation(
+        {
+          hotelId: isApiMode ? s.apiMotelKey! : hotel.id,
+          roomId: isApiMode ? s.apiPackageKey! : room!.id,
+          checkIn: s.checkIn,
+          checkOut: s.checkOut,
+          guestName: s.guestName,
+          guestPhone: s.guestPhone,
+          totalPrice: total,
+          basePrice: total,
+        },
+        isApiMode ? `${s.apiCheckInTime}` : hotel.checkInTime,
+        isApiMode ? `${s.apiCheckOutTime}` : hotel.checkOutTime,
+      );
+      s.setReservationNumber(result.bookId);
       router.push("/reservation/complete");
-    }, 280);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "예약 중 오류가 발생했습니다.");
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -57,10 +84,12 @@ export function Step4Review({ onPrev }: { onPrev?: () => void } = {}) {
             <h3 className="t-h3 mt-2">{hotel.name}</h3>
             <div className="mt-1 t-body-sm text-[var(--color-ink-3)]">{hotel.address}</div>
             <div className="mt-4 flex flex-col gap-1">
-              <div className="t-h4">{room.name}</div>
-              <div className="t-caption text-[var(--color-ink-3)]">
-                {room.sizeSqm}㎡ · {room.bedType}베드 · {room.view} · 최대 {room.maxOccupancy}인
-              </div>
+              <div className="t-h4">{displayRoomName}</div>
+              {!isApiMode && room && (
+                <div className="t-caption text-[var(--color-ink-3)]">
+                  {room.sizeSqm}㎡ · {room.bedType}베드 · {room.view} · 최대 {room.maxOccupancy}인
+                </div>
+              )}
             </div>
           </div>
         </section>
@@ -71,8 +100,8 @@ export function Step4Review({ onPrev }: { onPrev?: () => void } = {}) {
         <section className="p-8">
           <span className="t-label-caps text-[var(--color-ink-3)]">투숙 일정</span>
           <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-3">
-            <SummaryCell label="체크인" value={`${formatKoDate(s.checkIn)} · ${hotel.checkInTime}`} />
-            <SummaryCell label="체크아웃" value={`${formatKoDate(s.checkOut)} · ${hotel.checkOutTime}`} />
+            <SummaryCell label="체크인" value={`${formatKoDate(s.checkIn)} · ${displayCheckInTime}`} />
+            <SummaryCell label="체크아웃" value={`${formatKoDate(s.checkOut)} · ${displayCheckOutTime}`} />
             <SummaryCell label="기간" value={`${nights}박 ${nights + 1}일`} />
           </div>
         </section>
@@ -103,13 +132,35 @@ export function Step4Review({ onPrev }: { onPrev?: () => void } = {}) {
 
         <div className="h-px bg-[var(--color-line)]" />
 
+        {/* Payment method */}
+        <section className="p-8">
+          <span className="t-label-caps text-[var(--color-ink-3)]">결제수단</span>
+          <div className="mt-4">
+            <label className="flex items-center gap-3 border border-[var(--color-ink)] rounded-[2px] px-5 py-4 cursor-pointer bg-[var(--color-bg-tint)]">
+              <input
+                type="radio"
+                name="payment"
+                checked
+                readOnly
+                className="h-4 w-4 accent-[var(--color-ink)]"
+              />
+              <div className="flex-1">
+                <span className="t-body-sm font-medium text-[var(--color-ink)]">현장결제</span>
+                <span className="t-caption text-[var(--color-ink-3)] ml-2">체크인 시 프론트에서 결제</span>
+              </div>
+            </label>
+          </div>
+        </section>
+
+        <div className="h-px bg-[var(--color-line)]" />
+
         {/* Payment summary */}
         <section className="p-8">
           <span className="t-label-caps text-[var(--color-ink-3)]">결제 요약</span>
           <div className="mt-4 flex flex-col gap-2">
             <div className="flex justify-between t-body-sm text-[var(--color-ink-2)]">
               <span>
-                {krw(room.basePrice)} × {nights}박
+                {isApiMode ? `${nights}박 합계` : `${krw(room!.basePrice)} × ${nights}박`}
               </span>
               <span>{krw(total)}</span>
             </div>
@@ -125,6 +176,13 @@ export function Step4Review({ onPrev }: { onPrev?: () => void } = {}) {
           </div>
         </section>
       </article>
+
+      {/* Error */}
+      {error && (
+        <div className="mt-8 border border-red-300 bg-red-50 rounded-[2px] px-6 py-4 t-body-sm text-red-700">
+          {error}
+        </div>
+      )}
 
       {/* Consent + confirm */}
       <div className="mt-10 flex flex-col gap-6">

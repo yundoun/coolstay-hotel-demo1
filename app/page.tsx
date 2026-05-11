@@ -3,7 +3,7 @@ import { siteHotel, siteRooms } from "@/lib/hotels";
 import { siteContent } from "@/lib/site-content";
 import { Reveal } from "@/components/reveal";
 import { AboutBlocks } from "@/components/about-blocks";
-import { OnepageRoomShowcase } from "@/components/onepage-room-showcase";
+import { RoomTabs } from "@/components/room-tabs";
 import { OnepageReservation } from "@/components/onepage-reservation";
 import { MapPin, Clock, Phone, Car, Train } from "lucide-react";
 
@@ -84,7 +84,7 @@ export default function HomePage() {
         <AboutBlocks blocks={about} />
       </div>
 
-      {/* ============== 객실 쇼케이스 (Sticky 이미지 전환) ============== */}
+      {/* ============== 객실 안내 (간단 그리드) ============== */}
       <section id="rooms" className="py-[120px]">
         <div className="container-page">
           <div className="mb-[64px]">
@@ -100,7 +100,8 @@ export default function HomePage() {
               </p>
             </Reveal>
           </div>
-          <OnepageRoomShowcase rooms={siteRooms} hotelId={siteHotel.id} />
+
+          <RoomTabs rooms={siteRooms} />
         </div>
       </section>
 

@@ -2,125 +2,198 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect } from "react";
-import { siteHotel, siteRooms, SITE_HOTEL_ID, getRoom } from "@/lib/hotels";
+import { useEffect, useState } from "react";
+import { siteHotel, SITE_HOTEL_ID } from "@/lib/hotels";
 import { useReservation } from "@/lib/reservation-store";
 import { cn, krw, nightsBetween } from "@/lib/utils";
-import type { Room } from "@/lib/types";
+import { format, parseISO } from "date-fns";
 import { AnimatePresence, motion } from "framer-motion";
+
+type ApiRoom = {
+  itemKey: string;
+  packageKey: string;
+  name: string;
+  maxGuests: number;
+  image: string | null;
+  price: number;
+  dailyPrices: number[];
+  checkInTime: string;
+  checkOutTime: string;
+};
+
+type StoreData = {
+  motelKey: string;
+  storeName: string;
+  sitePayment: boolean;
+  rooms: ApiRoom[];
+};
 
 export function Step2Hotel({ onNext, onPrev }: { onNext?: () => void; onPrev?: () => void } = {}) {
   const s = useReservation();
   const nights = nightsBetween(s.checkIn, s.checkOut);
 
-  // Auto-select the site hotel + reset room selection
+  const [storeData, setStoreData] = useState<StoreData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedPkg, setSelectedPkg] = useState<string | null>(null);
+
+  // Auto-select the site hotel
   useEffect(() => {
     if (s.hotelId !== SITE_HOTEL_ID) {
-      s.setHotel(SITE_HOTEL_ID); // also resets roomId
-    } else {
-      s.setRoom(null); // clear stale roomId from sessionStorage
+      s.setHotel(SITE_HOTEL_ID);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const canNext = Boolean(s.roomId && nights > 0);
-  const selectedRoom = s.roomId ? getRoom(s.roomId) : null;
-  const total = selectedRoom && nights > 0 ? selectedRoom.basePrice * nights : 0;
+  // Fetch rooms from API
+  useEffect(() => {
+    if (!s.checkIn || !s.checkOut || nights <= 0) return;
 
+    const checkIn = format(parseISO(s.checkIn), "yyyyMMdd");
+    const checkOut = format(parseISO(s.checkOut), "yyyyMMdd");
+
+    setLoading(true);
+    setError(null);
+
+    fetch(`/api/store/rooms?checkIn=${checkIn}&checkOut=${checkOut}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("객실 조회 실패");
+        return res.json();
+      })
+      .then((data: StoreData) => {
+        setStoreData(data);
+        setSelectedPkg(null);
+      })
+      .catch((err) => {
+        setError(err.message);
+      })
+      .finally(() => setLoading(false));
+  }, [s.checkIn, s.checkOut, nights]);
+
+  const selectedRoom = storeData?.rooms.find((r) => r.packageKey === selectedPkg) ?? null;
+
+  const handleSelect = (room: ApiRoom) => {
+    setSelectedPkg(room.packageKey);
+    s.setRoom(room.itemKey);
+    s.setApiRoom({
+      motelKey: storeData!.motelKey,
+      packageKey: room.packageKey,
+      roomName: room.name,
+      price: room.price,
+      checkInTime: room.checkInTime,
+      checkOutTime: room.checkOutTime,
+    });
+  };
+
+  const canNext = Boolean(selectedPkg && nights > 0);
 
   return (
     <div className="mx-auto w-full max-w-[1240px]">
       <span className="eyebrow">Step 02</span>
       <h2 className="t-h2 mt-4">객실을 선택하세요.</h2>
       <p className="t-body mt-4 text-[var(--color-ink-3)]">
-        {nights > 0
-          ? `${nights}박 일정에 맞는 객실을 선택해 주세요.`
-          : "객실을 선택해 주세요."}
+        {storeData
+          ? `${storeData.storeName} · ${nights}박 일정에 맞는 객실을 선택해 주세요.`
+          : `${nights}박 일정에 맞는 객실을 선택해 주세요.`}
       </p>
 
+      {/* Loading */}
+      {loading && (
+        <div className="mt-10 flex items-center justify-center py-20 text-[var(--color-ink-3)] t-body-sm">
+          객실 정보를 불러오는 중...
+        </div>
+      )}
+
+      {/* Error */}
+      {error && (
+        <div className="mt-10 border border-red-300 bg-red-50 rounded-[2px] px-6 py-4 t-body-sm text-red-700">
+          {error}
+        </div>
+      )}
+
       {/* Room list */}
-      <section className="mt-10 border border-[var(--color-line)] bg-white rounded-[2px] overflow-hidden">
-        <div className="divide-y divide-[var(--color-line)]">
-          {siteRooms.map((r) => {
-            const isSelected = s.roomId === r.id;
-            const roomTotal = nights > 0 ? nights * r.basePrice : r.basePrice;
+      {!loading && storeData && (
+        <section className="mt-10 border border-[var(--color-line)] bg-white rounded-[2px] overflow-hidden">
+          <div className="divide-y divide-[var(--color-line)]">
+            {storeData.rooms.map((r) => {
+              const isSelected = selectedPkg === r.packageKey;
 
-            return (
-              <div
-                key={r.id}
-                className={cn(
-                  "flex flex-col sm:flex-row gap-4 p-5 transition-colors",
-                  isSelected && "bg-[var(--color-bg-tint)]",
-                )}
-              >
-                {/* Room image */}
-                <div className="relative aspect-[4/3] w-full sm:w-[160px] shrink-0 overflow-hidden rounded-[2px] bg-[var(--color-line-soft)]">
-                  <Image
-                    src={r.images[0]}
-                    alt={r.name}
-                    fill
-                    sizes="160px"
-                    className="object-cover"
-                  />
-                </div>
-
-                {/* Room info */}
-                <div className="flex flex-1 flex-col gap-2 min-w-0">
-                  <span className="t-label-caps text-[var(--color-ink-3)]">
-                    {r.tier}
-                  </span>
-                  <h3 className="t-h4">{r.name}</h3>
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-[var(--color-ink-2)]">
-                    <span>{r.sizeSqm}㎡</span>
-                    <Dot />
-                    <span>{r.bedType}베드</span>
-                    <Dot />
-                    <span>{r.view}</span>
-                    <Dot />
-                    <span>최대 {r.maxOccupancy}인</span>
-                  </div>
-                  <ul className="mt-1 flex flex-wrap gap-1.5">
-                    {r.amenities.slice(0, 4).map((a) => (
-                      <li
-                        key={a}
-                        className="border border-[var(--color-line)] px-2 py-0.5 text-[11px] text-[var(--color-ink-3)]"
-                      >
-                        {a}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Price + select */}
-                <div className="flex sm:flex-col items-center sm:items-end justify-between gap-3 sm:min-w-[140px] shrink-0">
-                  <div className="text-right">
-                    <div className="t-caption text-[var(--color-ink-3)]">1박 기준</div>
-                    <div className="t-price-sm mt-0.5">{krw(r.basePrice)}</div>
-                    {nights > 0 && (
-                      <div className="t-caption text-[var(--color-ink-3)] mt-0.5">
-                        {nights}박 · {krw(roomTotal)}
+              return (
+                <div
+                  key={r.packageKey}
+                  className={cn(
+                    "flex flex-col sm:flex-row gap-4 p-5 transition-colors",
+                    isSelected && "bg-[var(--color-bg-tint)]",
+                  )}
+                >
+                  {/* Room image — 외부 URL이므로 native img 사용 */}
+                  <div className="relative aspect-[4/3] w-full sm:w-[160px] shrink-0 overflow-hidden rounded-[2px] bg-[var(--color-line-soft)]">
+                    {r.image ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        src={r.image}
+                        alt={r.name}
+                        className="absolute inset-0 h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center t-caption text-[var(--color-ink-3)]">
+                        이미지 없음
                       </div>
                     )}
                   </div>
-                  <button
-                    onClick={() => s.setRoom(r.id)}
-                    className={cn(
-                      "btn btn-sm",
-                      isSelected ? "btn-primary" : "btn-secondary",
-                    )}
-                  >
-                    {isSelected ? "선택됨" : "선택"}
-                  </button>
+
+                  {/* Room info */}
+                  <div className="flex flex-1 flex-col gap-2 min-w-0">
+                    <h3 className="t-h4">{r.name}</h3>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-[var(--color-ink-2)]">
+                      <span>최대 {r.maxGuests}인</span>
+                      <Dot />
+                      <span>체크인 {r.checkInTime}:00</span>
+                      <Dot />
+                      <span>체크아웃 {r.checkOutTime}:00</span>
+                    </div>
+                    <div className="mt-1 flex flex-wrap gap-1.5">
+                      <span className="border border-[var(--color-line)] px-2 py-0.5 text-[11px] text-[var(--color-ink-3)]">
+                        현장결제
+                      </span>
+                      <span className="border border-[var(--color-line)] px-2 py-0.5 text-[11px] text-[var(--color-ink-3)]">
+                        숙박
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Price + select */}
+                  <div className="flex sm:flex-col items-center sm:items-end justify-between gap-3 sm:min-w-[140px] shrink-0">
+                    <div className="text-right">
+                      {r.dailyPrices.length > 1 && (
+                        <div className="t-caption text-[var(--color-ink-3)]">
+                          {r.dailyPrices.map((p, i) => `${i + 1}박 ${krw(p)}`).join(" / ")}
+                        </div>
+                      )}
+                      <div className="t-price-sm mt-0.5">{krw(r.price)}</div>
+                      <div className="t-caption text-[var(--color-ink-3)] mt-0.5">
+                        {nights}박 합계
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleSelect(r)}
+                      className={cn(
+                        "btn btn-sm",
+                        isSelected ? "btn-primary" : "btn-secondary",
+                      )}
+                    >
+                      {isSelected ? "선택됨" : "선택"}
+                    </button>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {/* Nav */}
       {onNext ? (
-        /* 인라인 모드: 이전/다음 버튼 나란히 */
         <div className="mt-16 flex items-center justify-between border-t border-[var(--color-line)] pt-8">
           <button type="button" onClick={onPrev} className="btn btn-secondary">
             ← 이전
@@ -136,7 +209,6 @@ export function Step2Hotel({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
         </div>
       ) : (
         <>
-          {/* 페이지 모드: 이전 버튼 + sticky 하단 바 */}
           <div className="mt-16 flex items-center border-t border-[var(--color-line)] pt-8">
             <Link href="/reservation?step=1" className="btn btn-secondary">
               ← 이전
@@ -168,7 +240,7 @@ export function Step2Hotel({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
                         {selectedRoom.name}
                       </div>
                       <div className="t-caption text-[var(--color-ink-3)] truncate">
-                        {nights}박 · {krw(total)}
+                        {nights}박 · {krw(selectedRoom.price)}
                       </div>
                     </div>
                   </div>

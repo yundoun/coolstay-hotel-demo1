@@ -50,27 +50,6 @@ export const siteContent: SiteContent = {
       image: "/hotels/sowol-seoul/gallery-1.jpg",
       imagePosition: "right",
     },
-    {
-      type: "feature-grid",
-      eyebrow: "Experience",
-      title: "소월 서울만의 경험",
-      features: [
-        { icon: "spa", title: "프라이빗 스파", description: "전용 스파에서 도심의 피로를 풀어보세요" },
-        { icon: "dining", title: "모던 한식 다이닝", description: "제철 식재료로 차린 아침과 코스 디너" },
-        { icon: "lounge", title: "루프탑 라운지", description: "남산 야경을 바라보며 즐기는 칵테일" },
-        { icon: "fitness", title: "24시간 피트니스", description: "최신 장비를 갖춘 프라이빗 피트니스" },
-        { icon: "pool", title: "실내 수영장", description: "사계절 이용 가능한 온수 인피니티 풀" },
-        { icon: "concierge", title: "컨시어지 서비스", description: "도심 명소 투어부터 공항 리무진까지" },
-      ],
-    },
-    {
-      type: "image-text",
-      eyebrow: "Design",
-      title: "공간이 들려주는\n이야기.",
-      body: "로비에 들어서는 순간부터 객실의 마지막 디테일까지, 소월 서울은 한국의 전통 미학을 현대적 언어로 재해석합니다. 자연석과 한지, 놋쇠와 원목이 조화롭게 어우러진 공간에서 서울의 새로운 풍경을 만나보세요.",
-      image: "/hotels/sowol-seoul/gallery-2.jpg",
-      imagePosition: "left",
-    },
   ],
   directions: {
     transport: [

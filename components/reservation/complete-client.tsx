@@ -18,20 +18,26 @@ export function ReservationCompleteClient() {
     setMounted(true);
   }, []);
 
+  const isApiMode = Boolean(s.apiPackageKey);
+
   useEffect(() => {
     if (!mounted) return;
-    if (!s.reservationNumber || !s.hotelId || !s.roomId) {
+    if (!s.reservationNumber || !s.hotelId) {
       router.replace("/reservation?step=1");
     }
-  }, [mounted, s.reservationNumber, s.hotelId, s.roomId, router]);
+  }, [mounted, s.reservationNumber, s.hotelId, router]);
 
   const hotel = s.hotelId ? getHotel(s.hotelId) : null;
   const room = s.roomId ? getRoom(s.roomId) : null;
-
-  if (!mounted || !hotel || !room || !s.reservationNumber) return null;
-
   const nights = nightsBetween(s.checkIn, s.checkOut);
-  const total = room.basePrice * nights;
+
+  const displayRoomName = isApiMode ? s.apiRoomName : room?.name;
+  const displayCheckInTime = isApiMode ? `${s.apiCheckInTime}:00` : hotel?.checkInTime;
+  const displayCheckOutTime = isApiMode ? `${s.apiCheckOutTime}:00` : hotel?.checkOutTime;
+  const total = isApiMode ? (s.apiPrice ?? 0) : (room ? room.basePrice * nights : 0);
+
+  if (!mounted || !hotel || !s.reservationNumber) return null;
+  if (!isApiMode && !room) return null;
 
   return (
     <>
@@ -72,10 +78,12 @@ export function ReservationCompleteClient() {
                   {hotel.city} · {hotel.grade}-Star Hotel
                 </span>
                 <h3 className="t-h3 mt-2">{hotel.name}</h3>
-                <div className="mt-4 t-h4">{room.name}</div>
-                <div className="t-caption text-[var(--color-ink-3)] mt-1">
-                  {room.sizeSqm}㎡ · {room.bedType}베드 · {room.view}
-                </div>
+                <div className="mt-4 t-h4">{displayRoomName}</div>
+                {!isApiMode && room && (
+                  <div className="t-caption text-[var(--color-ink-3)] mt-1">
+                    {room.sizeSqm}㎡ · {room.bedType}베드 · {room.view}
+                  </div>
+                )}
               </div>
             </section>
 
@@ -83,8 +91,8 @@ export function ReservationCompleteClient() {
 
             <section className="p-8">
               <div className="grid grid-cols-2 gap-5 md:grid-cols-4">
-                <Row label="체크인" value={`${formatKoDate(s.checkIn)} · ${hotel.checkInTime}`} />
-                <Row label="체크아웃" value={`${formatKoDate(s.checkOut)} · ${hotel.checkOutTime}`} />
+                <Row label="체크인" value={`${formatKoDate(s.checkIn)} · ${displayCheckInTime}`} />
+                <Row label="체크아웃" value={`${formatKoDate(s.checkOut)} · ${displayCheckOutTime}`} />
                 <Row label="기간" value={`${nights}박 ${nights + 1}일`} />
                 <Row label="인원" value={`성인 ${s.adults}${s.children > 0 ? ` · 아동 ${s.children}` : ""}`} />
               </div>
@@ -110,9 +118,14 @@ export function ReservationCompleteClient() {
 
             <div className="h-px bg-[var(--color-line)]" />
 
-            <section className="flex items-baseline justify-between p-8">
-              <span className="t-h4">결제 예정 합계</span>
-              <span className="t-price">{krw(total)}</span>
+            <section className="p-8">
+              <div className="flex items-baseline justify-between">
+                <span className="t-h4">결제 예정 합계</span>
+                <span className="t-price">{krw(total)}</span>
+              </div>
+              <div className="mt-3 t-caption text-[var(--color-ink-3)]">
+                현장결제 — 체크인 시 호텔 프론트에서 결제가 진행됩니다.
+              </div>
             </section>
           </article>
 
