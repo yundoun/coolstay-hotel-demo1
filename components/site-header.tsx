@@ -7,10 +7,8 @@ import { useEffect, useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
 
 const NAV_SECTIONS = [
-  { id: "greeting", label: "인사말" },
   { id: "rooms", label: "객실" },
   { id: "reservation", label: "예약하기", isButton: true },
-  { id: "location", label: "찾아오는 길" },
 ];
 
 export function SiteHeader() {
