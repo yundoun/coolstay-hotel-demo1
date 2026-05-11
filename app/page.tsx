@@ -1,9 +1,9 @@
 import Image from "next/image";
-import { siteHotel, siteRooms } from "@/lib/hotels";
+import { siteHotel } from "@/lib/hotels";
 import { siteContent } from "@/lib/site-content";
 import { Reveal } from "@/components/reveal";
 import { AboutBlocks } from "@/components/about-blocks";
-import { RoomTabs } from "@/components/room-tabs";
+import { ApiRoomTabs } from "@/components/api-room-tabs";
 import { OnepageReservation } from "@/components/onepage-reservation";
 
 export default function HomePage() {
@@ -87,12 +87,12 @@ export default function HomePage() {
             </Reveal>
             <Reveal delay={0.1}>
               <p className="t-body mt-4 text-[var(--color-ink-3)] max-w-[48ch]">
-                {siteRooms.length}개의 객실에서 각기 다른 뷰와 분위기를 만나보세요.
+                객실별 특징과 요금을 확인해 보세요.
               </p>
             </Reveal>
           </div>
 
-          <RoomTabs rooms={siteRooms} />
+          <ApiRoomTabs />
         </div>
       </section>
 

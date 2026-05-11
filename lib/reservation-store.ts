@@ -16,11 +16,16 @@ export type ReservationState = {
   roomId: string | null;
   // Step 2 — API 연동용
   apiMotelKey: string | null;
+  apiStoreName: string | null;
+  apiSitePayment: boolean;
   apiPackageKey: string | null;
   apiRoomName: string | null;
+  apiRoomImage: string | null;
+  apiMaxGuests: number | null;
   apiPrice: number | null;
-  apiCheckInTime: string | null; // "17"
-  apiCheckOutTime: string | null; // "08"
+  apiDailyPrices: number[] | null;
+  apiCheckInTime: string | null;
+  apiCheckOutTime: string | null;
   // Step 3
   guestName: string;
   guestPhone: string;
@@ -33,11 +38,19 @@ export type ReservationState = {
   setGuests: (adults: number, children: number) => void;
   setHotel: (hotelId: string | null) => void;
   setRoom: (roomId: string | null) => void;
+  setApiStore: (info: {
+    motelKey: string;
+    storeName: string;
+    sitePayment: boolean;
+  }) => void;
   setApiRoom: (info: {
     motelKey: string;
     packageKey: string;
     roomName: string;
+    roomImage: string | null;
+    maxGuests: number;
     price: number;
+    dailyPrices: number[];
     checkInTime: string;
     checkOutTime: string;
   }) => void;
@@ -59,9 +72,14 @@ export const useReservation = create<ReservationState>()(
       hotelId: SITE_HOTEL_ID,
       roomId: null,
       apiMotelKey: null,
+      apiStoreName: null,
+      apiSitePayment: false,
       apiPackageKey: null,
       apiRoomName: null,
+      apiRoomImage: null,
+      apiMaxGuests: null,
       apiPrice: null,
+      apiDailyPrices: null,
       apiCheckInTime: null,
       apiCheckOutTime: null,
       guestName: "",
@@ -72,14 +90,23 @@ export const useReservation = create<ReservationState>()(
       setDates: (checkIn, checkOut) => set({ checkIn, checkOut }),
       setGuests: (adults, children) => set({ adults, children }),
       setHotel: (hotelId) =>
-        set({ hotelId, roomId: null, apiMotelKey: null, apiPackageKey: null, apiRoomName: null, apiPrice: null, apiCheckInTime: null, apiCheckOutTime: null }),
+        set({ hotelId, roomId: null, apiMotelKey: null, apiStoreName: null, apiSitePayment: false, apiPackageKey: null, apiRoomName: null, apiRoomImage: null, apiMaxGuests: null, apiPrice: null, apiDailyPrices: null, apiCheckInTime: null, apiCheckOutTime: null }),
       setRoom: (roomId) => set({ roomId }),
+      setApiStore: (info) =>
+        set({
+          apiMotelKey: info.motelKey,
+          apiStoreName: info.storeName,
+          apiSitePayment: info.sitePayment,
+        }),
       setApiRoom: (info) =>
         set({
           apiMotelKey: info.motelKey,
           apiPackageKey: info.packageKey,
           apiRoomName: info.roomName,
+          apiRoomImage: info.roomImage,
+          apiMaxGuests: info.maxGuests,
           apiPrice: info.price,
+          apiDailyPrices: info.dailyPrices,
           apiCheckInTime: info.checkInTime,
           apiCheckOutTime: info.checkOutTime,
         }),
@@ -100,9 +127,14 @@ export const useReservation = create<ReservationState>()(
           hotelId: SITE_HOTEL_ID,
           roomId: null,
           apiMotelKey: null,
+          apiStoreName: null,
+          apiSitePayment: false,
           apiPackageKey: null,
           apiRoomName: null,
+          apiRoomImage: null,
+          apiMaxGuests: null,
           apiPrice: null,
+          apiDailyPrices: null,
           apiCheckInTime: null,
           apiCheckOutTime: null,
           guestName: "",

@@ -6,9 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useReservation } from "@/lib/reservation-store";
-import { getHotel, getRoom } from "@/lib/hotels";
 import { formatKoDate, krw, nightsBetween } from "@/lib/utils";
-import Image from "next/image";
 
 const schema = z.object({
   name: z.string().min(2, "이름을 입력해 주세요.").max(30),
@@ -25,10 +23,10 @@ type FormValues = z.infer<typeof schema>;
 export function Step3Guest({ onNext, onPrev }: { onNext?: () => void; onPrev?: () => void } = {}) {
   const s = useReservation();
   const router = useRouter();
-  const hotel = s.hotelId ? getHotel(s.hotelId) : null;
-  const room = s.roomId ? getRoom(s.roomId) : null;
   const nights = nightsBetween(s.checkIn, s.checkOut);
-  const total = room && nights > 0 ? room.basePrice * nights : 0;
+  const storeName = s.apiStoreName;
+  const roomName = s.apiRoomName;
+  const total = s.apiPrice ?? 0;
 
   const {
     register,
@@ -79,22 +77,23 @@ export function Step3Guest({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
 
         {/* Summary rail */}
         <aside className="border border-[var(--color-line)] bg-white rounded-[2px] h-fit overflow-hidden">
-          {hotel && room && (
+          {storeName && roomName && (
             <>
-              <div className="relative aspect-[16/10] w-full bg-[var(--color-line-soft)]">
-                <Image
-                  src={hotel.heroImage}
-                  alt={hotel.name}
-                  fill
-                  sizes="360px"
-                  className="object-cover"
-                />
-              </div>
+              {s.apiRoomImage && (
+                <div className="relative aspect-[16/10] w-full bg-[var(--color-line-soft)]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={s.apiRoomImage}
+                    alt={roomName}
+                    className="absolute inset-0 h-full w-full object-cover"
+                  />
+                </div>
+              )}
               <div className="p-6">
                 <span className="t-label-caps text-[var(--color-ink-3)]">예약 요약</span>
                 <div className="mt-4 flex flex-col gap-2">
-                  <div className="t-h4">{hotel.name}</div>
-                  <div className="t-body-sm text-[var(--color-ink-3)]">{room.name}</div>
+                  <div className="t-h4">{storeName}</div>
+                  <div className="t-body-sm text-[var(--color-ink-3)]">{roomName}</div>
                 </div>
                 <div className="my-5 h-px bg-[var(--color-line)]" />
                 <div className="flex flex-col gap-3">

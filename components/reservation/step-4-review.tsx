@@ -1,11 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useReservation } from "@/lib/reservation-store";
-import { getHotel, getRoom } from "@/lib/hotels";
 import { createGuestReservation } from "@/lib/reservation-api";
 import {
   formatKoDate,
@@ -20,31 +18,25 @@ export function Step4Review({ onPrev }: { onPrev?: () => void } = {}) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const hotel = s.hotelId ? getHotel(s.hotelId) : null;
-  const room = s.roomId ? getRoom(s.roomId) : null;
   const nights = nightsBetween(s.checkIn, s.checkOut);
+  const storeName = s.apiStoreName;
+  const roomName = s.apiRoomName;
+  const total = s.apiPrice ?? 0;
+  const checkInTime = s.apiCheckInTime ? `${s.apiCheckInTime}:00` : "";
+  const checkOutTime = s.apiCheckOutTime ? `${s.apiCheckOutTime}:00` : "";
 
-  // API 연동 모드: apiPackageKey가 있으면 실제 API 가격/키 사용
-  const isApiMode = Boolean(s.apiPackageKey);
-  const total = isApiMode ? (s.apiPrice ?? 0) : (room ? room.basePrice * nights : 0);
-  const displayRoomName = isApiMode ? s.apiRoomName : room?.name;
-  const displayCheckInTime = isApiMode ? `${s.apiCheckInTime}:00` : hotel?.checkInTime;
-  const displayCheckOutTime = isApiMode ? `${s.apiCheckOutTime}:00` : hotel?.checkOutTime;
-
-  if (!hotel) return null;
-  if (!isApiMode && !room) return null;
+  if (!storeName || !roomName) return null;
 
   const onConfirm = async () => {
-    if (!agree || submitting || !hotel) return;
-    if (!isApiMode && !room) return;
+    if (!agree || submitting) return;
     setSubmitting(true);
     setError(null);
 
     try {
       const result = await createGuestReservation(
         {
-          hotelId: isApiMode ? s.apiMotelKey! : hotel.id,
-          roomId: isApiMode ? s.apiPackageKey! : room!.id,
+          hotelId: s.apiMotelKey!,
+          roomId: s.apiPackageKey!,
           checkIn: s.checkIn,
           checkOut: s.checkOut,
           guestName: s.guestName,
@@ -52,8 +44,8 @@ export function Step4Review({ onPrev }: { onPrev?: () => void } = {}) {
           totalPrice: total,
           basePrice: total,
         },
-        isApiMode ? `${s.apiCheckInTime}` : hotel.checkInTime,
-        isApiMode ? `${s.apiCheckOutTime}` : hotel.checkOutTime,
+        s.apiCheckInTime ?? "",
+        s.apiCheckOutTime ?? "",
       );
       s.setReservationNumber(result.bookId);
       router.push("/reservation/complete");
@@ -74,20 +66,19 @@ export function Step4Review({ onPrev }: { onPrev?: () => void } = {}) {
       <article className="mt-12 border border-[var(--color-line)] bg-white rounded-[2px]">
         {/* Hotel + Room */}
         <section className="flex flex-col gap-6 p-8 md:flex-row md:items-center">
-          <div className="relative aspect-[16/10] w-full md:w-[280px] shrink-0 overflow-hidden rounded-[2px] bg-[var(--color-line-soft)]">
-            <Image src={hotel.heroImage} alt={hotel.name} fill sizes="280px" className="object-cover" />
-          </div>
+          {s.apiRoomImage && (
+            <div className="relative aspect-[16/10] w-full md:w-[280px] shrink-0 overflow-hidden rounded-[2px] bg-[var(--color-line-soft)]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={s.apiRoomImage} alt={roomName!} className="absolute inset-0 h-full w-full object-cover" />
+            </div>
+          )}
           <div className="flex-1">
-            <span className="t-label-caps text-[var(--color-ink-3)]">
-              {hotel.city} · {hotel.grade}-Star Hotel
-            </span>
-            <h3 className="t-h3 mt-2">{hotel.name}</h3>
-            <div className="mt-1 t-body-sm text-[var(--color-ink-3)]">{hotel.address}</div>
+            <h3 className="t-h3">{storeName}</h3>
             <div className="mt-4 flex flex-col gap-1">
-              <div className="t-h4">{displayRoomName}</div>
-              {!isApiMode && room && (
+              <div className="t-h4">{roomName}</div>
+              {s.apiMaxGuests && (
                 <div className="t-caption text-[var(--color-ink-3)]">
-                  {room.sizeSqm}㎡ · {room.bedType}베드 · {room.view} · 최대 {room.maxOccupancy}인
+                  최대 {s.apiMaxGuests}인
                 </div>
               )}
             </div>
@@ -100,8 +91,8 @@ export function Step4Review({ onPrev }: { onPrev?: () => void } = {}) {
         <section className="p-8">
           <span className="t-label-caps text-[var(--color-ink-3)]">투숙 일정</span>
           <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-3">
-            <SummaryCell label="체크인" value={`${formatKoDate(s.checkIn)} · ${displayCheckInTime}`} />
-            <SummaryCell label="체크아웃" value={`${formatKoDate(s.checkOut)} · ${displayCheckOutTime}`} />
+            <SummaryCell label="체크인" value={`${formatKoDate(s.checkIn)} · ${checkInTime}`} />
+            <SummaryCell label="체크아웃" value={`${formatKoDate(s.checkOut)} · ${checkOutTime}`} />
             <SummaryCell label="기간" value={`${nights}박 ${nights + 1}일`} />
           </div>
         </section>
@@ -160,7 +151,7 @@ export function Step4Review({ onPrev }: { onPrev?: () => void } = {}) {
           <div className="mt-4 flex flex-col gap-2">
             <div className="flex justify-between t-body-sm text-[var(--color-ink-2)]">
               <span>
-                {isApiMode ? `${nights}박 합계` : `${krw(room!.basePrice)} × ${nights}박`}
+                {nights}박 합계
               </span>
               <span>{krw(total)}</span>
             </div>

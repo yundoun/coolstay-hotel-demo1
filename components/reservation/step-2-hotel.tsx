@@ -49,13 +49,16 @@ export function Step2Hotel({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
   useEffect(() => {
     if (!s.checkIn || !s.checkOut || nights <= 0) return;
 
+    const controller = new AbortController();
     const checkIn = format(parseISO(s.checkIn), "yyyyMMdd");
     const checkOut = format(parseISO(s.checkOut), "yyyyMMdd");
 
     setLoading(true);
     setError(null);
 
-    fetch(`/api/store/rooms?checkIn=${checkIn}&checkOut=${checkOut}`)
+    fetch(`/api/store/rooms?checkIn=${checkIn}&checkOut=${checkOut}`, {
+      signal: controller.signal,
+    })
       .then((res) => {
         if (!res.ok) throw new Error("객실 조회 실패");
         return res.json();
@@ -63,12 +66,19 @@ export function Step2Hotel({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
       .then((data: StoreData) => {
         setStoreData(data);
         setSelectedPkg(null);
+        s.setApiStore({
+          motelKey: data.motelKey,
+          storeName: data.storeName,
+          sitePayment: data.sitePayment,
+        });
       })
       .catch((err) => {
-        setError(err.message);
+        if (err.name !== "AbortError") setError(err.message);
       })
       .finally(() => setLoading(false));
-  }, [s.checkIn, s.checkOut, nights]);
+
+    return () => controller.abort();
+  }, [s.checkIn, s.checkOut]);
 
   const selectedRoom = storeData?.rooms.find((r) => r.packageKey === selectedPkg) ?? null;
 
@@ -79,7 +89,10 @@ export function Step2Hotel({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
       motelKey: storeData!.motelKey,
       packageKey: room.packageKey,
       roomName: room.name,
+      roomImage: room.image,
+      maxGuests: room.maxGuests,
       price: room.price,
+      dailyPrices: room.dailyPrices,
       checkInTime: room.checkInTime,
       checkOutTime: room.checkOutTime,
     });
