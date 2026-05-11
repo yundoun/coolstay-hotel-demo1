@@ -43,11 +43,11 @@ export function ReservationShell() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 스텝 변경 시 스크롤을 step-indicator 위치로 초기화
+  // 스텝 변경 시 스크롤을 step-indicator 직전 앵커로 초기화
   useEffect(() => {
-    const el = document.getElementById("step-indicator");
-    if (el) {
-      const top = el.getBoundingClientRect().top + window.scrollY - 72;
+    const anchor = document.getElementById("step-scroll-anchor");
+    if (anchor) {
+      const top = anchor.getBoundingClientRect().top + window.scrollY - 72;
       window.scrollTo({ top, behavior: "instant" });
     }
   }, [step]);
@@ -84,6 +84,7 @@ export function ReservationShell() {
   return (
     <>
       <div className="h-[72px]" aria-hidden />
+      <div id="step-scroll-anchor" aria-hidden />
       <StepIndicator current={step} />
       <div className="container-page py-[64px]">
         <AnimatePresence mode="wait">

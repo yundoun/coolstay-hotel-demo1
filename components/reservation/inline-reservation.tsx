@@ -19,12 +19,11 @@ export function InlineReservation() {
 
   const goTo = useCallback((next: Step) => {
     setStep(next);
-    // Step 전환 시 스텝 인디케이터가 헤더에 딱 붙는 지점으로 스크롤
     setTimeout(() => {
-      const el = document.getElementById("step-indicator");
-      if (el) {
-        const top = el.getBoundingClientRect().top + window.scrollY - 72; // 헤더 높이
-        window.scrollTo({ top, behavior: "smooth" });
+      const anchor = document.getElementById("step-scroll-anchor");
+      if (anchor) {
+        const top = anchor.getBoundingClientRect().top + window.scrollY - 72;
+        window.scrollTo({ top, behavior: "instant" });
       }
     }, 50);
   }, []);
@@ -44,6 +43,7 @@ export function InlineReservation() {
 
   return (
     <div>
+      <div id="step-scroll-anchor" aria-hidden />
       <StepIndicator current={step} />
       <div className="container-page py-[64px]">
         <AnimatePresence mode="wait">
