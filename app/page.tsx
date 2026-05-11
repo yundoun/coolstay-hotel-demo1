@@ -5,15 +5,6 @@ import { Reveal } from "@/components/reveal";
 import { AboutBlocks } from "@/components/about-blocks";
 import { RoomTabs } from "@/components/room-tabs";
 import { OnepageReservation } from "@/components/onepage-reservation";
-import { MapPin, Clock, Phone, Car, Train } from "lucide-react";
-
-const DIRECTION_ICONS: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
-  "map-pin": MapPin,
-  car: Car,
-  train: Train,
-  phone: Phone,
-  clock: Clock,
-};
 
 export default function HomePage() {
   const { greeting, about, directions } = siteContent;
@@ -137,54 +128,33 @@ export default function HomePage() {
             </Reveal>
           </div>
 
-          {/* 지도 대체 영역 */}
+          {/* 구글 지도 */}
           <Reveal delay={0.1}>
-            <div className="relative aspect-[21/9] w-full overflow-hidden rounded-[2px] bg-[var(--color-line-soft)]">
-              <Image
-                src={directions.mapImage ?? siteHotel.heroImage}
-                alt={`${siteHotel.name} 위치`}
-                fill
-                sizes="100vw"
-                className="object-cover opacity-40"
+            <div className="relative aspect-[21/9] w-full overflow-hidden rounded-[2px]">
+              <iframe
+                src={`https://maps.google.com/maps?q=${encodeURIComponent(directions.mapQuery)}&t=&z=16&ie=UTF8&iwloc=&output=embed`}
+                width="100%"
+                height="100%"
+                className="absolute inset-0 border-0"
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title={`${siteHotel.name} 위치`}
               />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center">
-                  <MapPin className="mx-auto h-10 w-10 text-[var(--color-ink)]" strokeWidth={1.5} />
-                  <p className="t-h4 mt-4">{siteHotel.address}</p>
-                </div>
-              </div>
             </div>
           </Reveal>
 
-          {/* 교통 정보 — 데이터 기반 */}
-          <div className="mt-[64px] grid grid-cols-1 gap-10 md:grid-cols-3">
-            {directions.transport.map((t, i) => {
-              const Icon = DIRECTION_ICONS[t.icon] ?? MapPin;
-              return (
-                <Reveal key={t.label} as="div" delay={i * 0.04}>
-                  <div className="flex flex-col gap-3">
-                    <Icon className="h-8 w-8 text-[var(--color-ink)]" strokeWidth={1.5} />
-                    <span className="t-label-caps text-[var(--color-ink-3)]">{t.label}</span>
-                    <p className="t-body text-[var(--color-ink)]">{t.description}</p>
-                  </div>
-                </Reveal>
-              );
-            })}
-          </div>
-
-          {/* 연락처 */}
-          <div className="mt-[64px] border-t border-[var(--color-line)] pt-[48px] grid grid-cols-1 gap-8 md:grid-cols-3">
-            <div className="flex flex-col gap-2">
-              <Phone className="h-6 w-6 text-[var(--color-ink)]" strokeWidth={1.5} />
-              <span className="t-label-caps text-[var(--color-ink-3)]">전화</span>
-              <p className="t-body">{siteHotel.phone}</p>
+          {/* 안내 항목 — 라벨+값 그리드 */}
+          <Reveal delay={0.15}>
+            <div className="mt-[48px] grid grid-cols-2 gap-x-8 gap-y-6 sm:grid-cols-3 md:grid-cols-5">
+              {directions.items.map((item) => (
+                <div key={item.label}>
+                  <span className="t-label-caps text-[var(--color-ink-3)]">{item.label}</span>
+                  <p className="t-body mt-1 text-[var(--color-ink)]">{item.value}</p>
+                </div>
+              ))}
             </div>
-            <div className="flex flex-col gap-2">
-              <Clock className="h-6 w-6 text-[var(--color-ink)]" strokeWidth={1.5} />
-              <span className="t-label-caps text-[var(--color-ink-3)]">체크인 · 체크아웃</span>
-              <p className="t-body">체크인 {siteHotel.checkInTime} · 체크아웃 {siteHotel.checkOutTime}</p>
-            </div>
-          </div>
+          </Reveal>
         </div>
       </section>
     </>

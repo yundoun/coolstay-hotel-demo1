@@ -25,10 +25,12 @@ export type SiteContent = {
   };
   /** About 섹션 블록들 — 순서대로 렌더링 */
   about: AboutBlock[];
-  /** 찾아오는 길 교통 안내 */
+  /** 찾아오는 길 — 지도 + 안내 항목 */
   directions: {
-    mapImage?: string;
-    transport: { icon: string; label: string; description: string }[];
+    /** 구글 지도 검색어 (주소 or 장소명) */
+    mapQuery: string;
+    /** 지도 아래 안내 항목 — 라벨+값 쌍, 자유 구성 */
+    items: { label: string; value: string }[];
   };
 };
 
@@ -52,10 +54,13 @@ export const siteContent: SiteContent = {
     },
   ],
   directions: {
-    transport: [
-      { icon: "map-pin", label: "주소", description: "서울특별시 중구 퇴계로 100" },
-      { icon: "car", label: "자가용", description: "호텔 지하 주차장 이용 (발레파킹 가능)" },
-      { icon: "train", label: "대중교통", description: "지하철 4호선 명동역 3번 출구 도보 10분" },
+    mapQuery: "서울특별시 금천구 디지털로9길 99 스타밸리",
+    items: [
+      { label: "주소", value: "서울특별시 금천구 디지털로9길 99 스타밸리" },
+      { label: "연락처", value: "+82-2-2230-3131" },
+      { label: "체크인", value: "15:00" },
+      { label: "체크아웃", value: "11:00" },
+      { label: "주차", value: "지하 주차장 (발레파킹 가능)" },
     ],
   },
 };
