@@ -43,6 +43,15 @@ export function ReservationShell() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // 스텝 변경 시 스크롤을 step-indicator 위치로 초기화
+  useEffect(() => {
+    const el = document.getElementById("step-indicator");
+    if (el) {
+      const top = el.getBoundingClientRect().top + window.scrollY - 72;
+      window.scrollTo({ top, behavior: "instant" });
+    }
+  }, [step]);
+
   // Step guards: redirect if required prior data missing
   useEffect(() => {
     if (step >= 2 && (!store.checkIn || !store.checkOut)) {
