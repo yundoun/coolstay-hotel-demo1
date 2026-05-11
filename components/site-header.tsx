@@ -32,9 +32,12 @@ export function SiteHeader() {
   const onDark = isHome && !scrolled;
 
   const scrollTo = useCallback((id: string) => {
-    const el = document.getElementById(id);
+    // 예약: 스텝 인디케이터가 헤더에 딱 붙는 지점으로 스크롤
+    const targetId = id === "reservation" ? "step-indicator" : id;
+    const el = document.getElementById(targetId);
     if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      const top = el.getBoundingClientRect().top + window.scrollY - 72;
+      window.scrollTo({ top, behavior: "smooth" });
     }
   }, []);
 

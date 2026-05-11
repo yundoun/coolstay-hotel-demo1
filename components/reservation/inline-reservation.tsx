@@ -19,10 +19,13 @@ export function InlineReservation() {
 
   const goTo = useCallback((next: Step) => {
     setStep(next);
-    // Step 전환 시 예약 섹션 상단으로 스크롤
+    // Step 전환 시 스텝 인디케이터가 헤더에 딱 붙는 지점으로 스크롤
     setTimeout(() => {
-      const el = document.getElementById("reservation");
-      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      const el = document.getElementById("step-indicator");
+      if (el) {
+        const top = el.getBoundingClientRect().top + window.scrollY - 72; // 헤더 높이
+        window.scrollTo({ top, behavior: "smooth" });
+      }
     }, 50);
   }, []);
 

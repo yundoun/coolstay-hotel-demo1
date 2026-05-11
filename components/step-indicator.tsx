@@ -9,7 +9,7 @@ const STEPS = [
 
 export function StepIndicator({ current }: { current: 1 | 2 | 3 | 4 }) {
   return (
-    <div className="sticky top-[72px] z-40 bg-white border-b border-[var(--color-line)]">
+    <div id="step-indicator" className="sticky top-[72px] z-40 bg-white border-b border-[var(--color-line)]">
       <div className="container-page py-5">
         <ol className="flex items-center gap-2">
           {STEPS.map((s, i) => {
