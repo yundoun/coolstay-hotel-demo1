@@ -22,7 +22,7 @@ export default function HomePage() {
     <>
       {/* ============== HERO ============== */}
       <section id="top" className="relative w-full">
-        <div className="relative h-[92vh] min-h-[720px] w-full overflow-hidden">
+        <div className="relative h-svh w-full overflow-hidden">
           <Image
             src={siteHotel.heroImage}
             alt={siteHotel.name}

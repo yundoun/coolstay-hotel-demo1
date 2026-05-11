@@ -8,9 +8,8 @@ import { cn } from "@/lib/utils";
 
 const NAV_SECTIONS = [
   { id: "greeting", label: "인사말" },
-  { id: "about", label: "호텔소개" },
   { id: "rooms", label: "객실" },
-  { id: "reservation", label: "예약" },
+  { id: "reservation", label: "예약하기", isButton: true },
   { id: "location", label: "찾아오는 길" },
 ];
 
@@ -98,20 +97,31 @@ export function SiteHeader() {
         </Link>
 
         <nav className="flex items-center gap-6 md:gap-10 text-[15px] font-medium">
-          {NAV_SECTIONS.map(({ id, label }) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => scrollTo(id)}
-              className={cn(
-                "nav-link cursor-pointer bg-transparent border-none",
-                activeSection === id && "font-semibold",
-              )}
-              data-active={activeSection === id}
-            >
-              {label}
-            </button>
-          ))}
+          {NAV_SECTIONS.map(({ id, label, isButton }) =>
+            isButton ? (
+              <button
+                key={id}
+                type="button"
+                onClick={() => scrollTo(id)}
+                className="inline-flex items-center justify-center h-[36px] px-5 rounded-[2px] bg-[var(--color-honey-500)] text-[var(--color-ink)] text-[13px] font-semibold tracking-[0.04em] hover:bg-[var(--color-honey-600)] transition-colors cursor-pointer border-none"
+              >
+                {label}
+              </button>
+            ) : (
+              <button
+                key={id}
+                type="button"
+                onClick={() => scrollTo(id)}
+                className={cn(
+                  "nav-link cursor-pointer bg-transparent border-none",
+                  activeSection === id && "font-semibold",
+                )}
+                data-active={activeSection === id}
+              >
+                {label}
+              </button>
+            ),
+          )}
         </nav>
       </div>
     </header>
