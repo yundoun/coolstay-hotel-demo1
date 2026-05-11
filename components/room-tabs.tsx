@@ -72,9 +72,19 @@ export function RoomTabs({ rooms }: { rooms: Room[] }) {
             <Link href={`/rooms/${room.id}`} className="btn btn-secondary">
               상세보기
             </Link>
-            <Link href="/#reservation" className="btn btn-primary">
+            <button
+              type="button"
+              onClick={() => {
+                const el = document.getElementById("step-indicator");
+                if (el) {
+                  const top = el.getBoundingClientRect().top + window.scrollY - 72;
+                  window.scrollTo({ top, behavior: "smooth" });
+                }
+              }}
+              className="btn btn-primary"
+            >
               예약하기 →
-            </Link>
+            </button>
           </div>
         </div>
       </div>

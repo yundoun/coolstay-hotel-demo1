@@ -17,9 +17,10 @@ export function OnepageRoomShowcase({
   hotelId: string;
 }) {
   const handleRoomSelect = useCallback((_roomId: string) => {
-    const el = document.getElementById("reservation");
+    const el = document.getElementById("step-indicator");
     if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      const top = el.getBoundingClientRect().top + window.scrollY - 72;
+      window.scrollTo({ top, behavior: "smooth" });
     }
   }, []);
 
