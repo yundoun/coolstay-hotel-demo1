@@ -14,7 +14,6 @@ const NAV_SECTIONS = [
 export function SiteHeader() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
-  const [activeSection, setActiveSection] = useState("");
   const isHome = pathname === "/";
 
   useEffect(() => {
@@ -28,30 +27,6 @@ export function SiteHeader() {
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, [isHome]);
-
-  // Track active section via IntersectionObserver
-  useEffect(() => {
-    if (!isHome) return;
-    const observers: IntersectionObserver[] = [];
-    const handleIntersect = (id: string) => (entries: IntersectionObserverEntry[]) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) setActiveSection(id);
-      });
-    };
-
-    NAV_SECTIONS.forEach(({ id }) => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      const observer = new IntersectionObserver(handleIntersect(id), {
-        rootMargin: "-40% 0px -50% 0px",
-        threshold: 0,
-      });
-      observer.observe(el);
-      observers.push(observer);
-    });
-
-    return () => observers.forEach((o) => o.disconnect());
   }, [isHome]);
 
   const onDark = isHome && !scrolled;
@@ -110,11 +85,7 @@ export function SiteHeader() {
                 key={id}
                 type="button"
                 onClick={() => scrollTo(id)}
-                className={cn(
-                  "nav-link cursor-pointer bg-transparent border-none",
-                  activeSection === id && "font-semibold",
-                )}
-                data-active={activeSection === id}
+                className="nav-link cursor-pointer bg-transparent border-none"
               >
                 {label}
               </button>
