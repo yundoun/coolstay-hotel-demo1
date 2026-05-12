@@ -1,91 +1,127 @@
-# 꿀스테이 호텔 데모 — 아키텍처 가이드
+# 꿀스테이 호텔 데모 — 아키텍처 가이드 (Ports & Adapters)
 
 > 이 문서는 코드 품질 게이트 역할을 합니다.
 > 하네스(hooks)가 편집 시 이 규칙을 자동으로 검증합니다.
 
 ---
 
-## 1. 디렉토리 구조
+## 1. Hexagonal Architecture 개요
 
 ```
-components/
-  layout/                  ← 셸·크롬 (layout.tsx에서 렌더)
+          ┌──────────────────────────┐
+          │       domain/            │  순수 타입·포트·유틸
+          │  (외부 의존 0)           │  adapters/app/ui import 금지
+          └────────────┬─────────────┘
+                       │ implements
+          ┌────────────▼─────────────┐
+          │      adapters/           │  CoolStay PMS, 정적 데이터, Zustand
+          │  (포트 구현체)           │  domain/ + 외부 라이브러리만 import
+          └────────────┬─────────────┘
+                       │ uses
+          ┌────────────▼─────────────┐
+          │    application/          │  훅·서비스가 어댑터를 조합
+          │  (유스케이스 오케스트레이션)  │  domain/, adapters/ import
+          └────────────┬─────────────┘
+                       │ uses
+          ┌────────────▼─────────────┐
+          │        ui/               │  프레젠테이션 컴포넌트
+          │   (props → JSX)          │  domain/(타입), application/(훅), ui/lib/
+          └────────────┬─────────────┘
+                       │ composed by
+          ┌────────────▼─────────────┐
+          │        app/              │  Next.js 라우팅 (얇은 진입점)
+          │  (routes + pages)        │  전체 import 허용
+          └──────────────────────────┘
+```
+
+---
+
+## 2. 디렉토리 구조
+
+```
+domain/                          ← 순수 타입·포트·유틸 (date-fns 허용)
+  hotel/
+    types.ts                     ← Hotel, Room, Region, Reservation
+    ports.ts                     ← interface HotelProvider
+  reservation/
+    types.ts                     ← ApiRoomSelection, ReservationReadyParams, ReservationResult
+    ports.ts                     ← interface RoomRepository, ReservationGateway
+  content/
+    types.ts                     ← SiteContent, AboutBlock
+    ports.ts                     ← interface ContentProvider, StoreInfoRepository
+  shared/
+    utils.ts                     ← krw, formatKoDate, nightsBetween, todayISO, addDaysISO
+
+adapters/                        ← 포트 구현 (교체 가능 단위)
+  coolstay/
+    client.ts                    ← getToken, getApiBase, fetchStoreDetail, MOTEL_KEY
+    mappers.ts                   ← toApiRoom, toRoomType, parseExtras
+    types.ts                     ← ApiRoom, RoomsResponse, StoreInfo, RoomType
+  static/
+    hotel-provider.ts            ← siteHotel, rooms[], getHotel, getRoom, SITE_HOTEL_ID
+    content-provider.ts          ← siteContent 데이터
+  zustand/
+    reservation-store.ts         ← Zustand persist store
+
+application/                     ← 유스케이스 오케스트레이션
+  hooks/
+    useApiRooms.ts               ← 객실 조회 훅
+    useSubmitReservation.ts      ← 예약 확정 훅
+    useStoreInfo.ts              ← 숙소 정보 조회 훅
+  services/
+    reservation-api.ts           ← createGuestReservation (클라이언트 fetch)
+
+ui/                              ← 프레젠테이션
+  lib/cn.ts                      ← cn() (clsx + tailwind-merge)
+  layout/                        ← 셸·크롬 (layout.tsx에서 렌더)
     site-header.tsx
     site-footer.tsx
     reservation-reset-guard.tsx
-  shared/                  ← 크로스피처 UI 프리미티브
+  shared/                        ← 크로스피처 UI 프리미티브
     reveal.tsx
     calendar-widget.tsx
     step-indicator.tsx
-  home/                    ← 홈페이지 전용 섹션
+  home/                          ← 홈페이지 전용 섹션
     about-blocks.tsx
     api-room-tabs.tsx
     hero-booking-bar.tsx
-  reservation/             ← 예약 플로우 (자기 완결)
+  reservation/                   ← 예약 플로우 (자기 완결)
     onepage-reservation.tsx
     inline-reservation.tsx
     step-1-dates.tsx … step-4-review.tsx
     complete-client.tsx
 
-lib/
-  types.ts                 ← 프로젝트 공통 도메인 타입
-  utils.ts                 ← 프로젝트 공통 유틸 (date, currency, cn)
-  hotels.ts                ← 싱글 호텔 데이터 + getHotel/getRoom
-  content/                 ← 사이트 콘텐츠 도메인
-    site-content.ts
-    useStoreInfo.ts
-  reservation/             ← 예약 도메인 (상태 + API + 훅)
-    store.ts
-    api.ts
-    useApiRooms.ts
-    useSubmitReservation.ts
-
-app/api/
-  store/                   ← CoolStay upstream 프록시
-    _lib.ts
-    info/route.ts
-    rooms/route.ts
-  reservation/
-    ready/route.ts
+app/                             ← Next.js 라우팅 (얇은 진입점)
+  page.tsx, layout.tsx, globals.css
+  reservation/page.tsx
+  reservation/complete/page.tsx
+  api/store/rooms/route.ts       ← validate → adapter 호출 → respond
+  api/store/info/route.ts
+  api/reservation/ready/route.ts
 ```
 
 ---
 
-## 2. 레이어 경계
-
-```
-┌─────────────────────────────────────────────┐
-│  app/page.tsx, app/layout.tsx               │  Page — 조합만, 로직 없음
-├─────────────────────────────────────────────┤
-│  components/{layout,shared,home,reservation}│  View — props → JSX
-├─────────────────────────────────────────────┤
-│  lib/*/use*.ts                              │  Hook — fetch·mutation 캡슐화
-├─────────────────────────────────────────────┤
-│  lib/reservation/store.ts                   │  Store — 상태 + 순수 액션
-├─────────────────────────────────────────────┤
-│  lib/*.ts (utils, types, hotels)            │  Domain — 순수 함수·타입·데이터
-├─────────────────────────────────────────────┤
-│  app/api/**/route.ts                        │  API Route — validate → delegate → respond
-│  app/api/**/_lib.ts                         │  API Lib — transform·파싱 로직
-└─────────────────────────────────────────────┘
-```
-
-### 레이어 규칙
+## 3. 레이어 규칙
 
 | 규칙 | 설명 |
 |------|------|
-| **R1** | **컴포넌트에 `fetch` 금지** — 데이터 페칭은 도메인별 커스텀 훅을 거친다. |
-| **R2** | **API route에 transform 로직 금지** — 파싱/매핑은 `_lib.ts`에 추출. route 핸들러는 `validate → delegate → respond` 3단계만. |
-| **R3** | **Store는 순수 액션만** — 비동기 호출, 라우팅, side-effect 금지. |
-| **R4** | **타입은 발행처에서 export** — API 응답 타입은 route에서 정의·export, 컴포넌트는 `import type`으로 소비. 재정의 금지. |
-| **R5** | **단일 책임** — 한 파일의 cyclomatic complexity ≤ 4. CRAP(테스트 0%) 기준 ≤ 20, 목표 ≤ 5. |
+| **H1** | `domain/`은 `adapters/`, `application/`, `ui/`, `app/`을 import할 수 없다. |
+| **H2** | `adapters/`는 `domain/`과 외부 라이브러리만 import한다. |
+| **H3** | `application/`은 `domain/`과 `adapters/`만 import한다. |
+| **H4** | `ui/`는 `domain/`(타입), `application/`(훅), `ui/lib/`만 import한다. |
+| **H5** | `ui/`는 `adapters/`를 직접 import할 수 없다. (Zustand store, static 예외) |
+| **R1** | `ui/` 컴포넌트에 `fetch` 금지 — 데이터 페칭은 `application/hooks/`를 거친다. |
+| **R4** | `ui/`에서 타입 재정의 금지 — `domain/` 또는 `adapters/` 타입을 `import type`으로 소비. |
+| **S1** | flat api 필드 사용 금지 — `apiRoom` 단일 객체로 접근. |
+| **S3** | Store 값에 non-null assertion(`!`) 금지 — guard 또는 early return으로 처리. |
 
 ---
 
-## 3. 상태 관리 구조
+## 4. 상태 관리 구조
 
 ```
-useReservation (Zustand + sessionStorage persist)  ← lib/reservation/store.ts
+useReservation (Zustand + sessionStorage persist)  ← adapters/zustand/reservation-store.ts
 ├── dates     : { checkIn, checkOut }
 ├── guests    : { adults, children }
 ├── hotel     : { hotelId, roomId }
@@ -94,45 +130,20 @@ useReservation (Zustand + sessionStorage persist)  ← lib/reservation/store.ts
 └── outcome   : { reservationNumber }
 ```
 
-### Store 규칙
-
-| 규칙 | 설명 |
-|------|------|
-| **S1** | **Flat 필드 대신 도메인 객체 사용** — 관련 필드는 하나의 nullable 객체로 묶는다. |
-| **S2** | **INITIAL_STATE 상수화** — `reset()`은 스프레드로 초기값을 참조한다. 값 중복 금지. |
-| **S3** | **Non-null assertion(`!`) 금지** — Store 값 사용 시 가드 또는 early return으로 처리. |
-
 ---
 
-## 4. 파일 명명·배치 규칙
+## 5. 포트 인터페이스
 
-| 패턴 | 위치 | 예시 |
-|------|------|------|
-| `use*.ts` (예약) | `lib/reservation/` | `useApiRooms.ts`, `useSubmitReservation.ts` |
-| `use*.ts` (콘텐츠) | `lib/content/` | `useStoreInfo.ts` |
-| `store.ts` | `lib/reservation/` | 예약 Zustand store |
-| `api.ts` | `lib/reservation/` | 예약 API 클라이언트 |
-| `step-*.tsx` | `components/reservation/` | `step-2-hotel.tsx` |
-| `_lib.ts` | `app/api/**/` | `app/api/store/_lib.ts` |
-| `route.ts` | `app/api/**/` | `app/api/store/rooms/route.ts` |
+### `domain/reservation/ports.ts`
+- `RoomRepository.fetchRooms(checkIn, checkOut)` — 날짜 기반 객실 조회
+- `ReservationGateway.submitReservation(params)` — 예약 제출
 
-### 배치 원칙
+### `domain/hotel/ports.ts`
+- `HotelProvider` — getHotel, getRoom, getSiteHotel, getAllRooms
 
-- **훅은 소비하는 도메인에 co-locate** — 예약 전용 훅은 `lib/reservation/`, 콘텐츠 전용 훅은 `lib/content/`
-- **크로스커팅 파일은 `lib/` 루트** — `types.ts`, `utils.ts`, `hotels.ts`
-- **컴포넌트는 기능 기반 그룹** — `layout/`, `shared/`, `home/`, `reservation/`
-
----
-
-## 5. 금지 패턴 (Anti-Patterns)
-
-| 코드 | 이유 | 대안 |
-|------|------|------|
-| 컴포넌트 내 `fetch()` / `useEffect` + fetch | View와 IO 결합 | 도메인 훅으로 추출 |
-| `s.apiMotelKey!` (non-null assertion) | 런타임 에러 위험 | `if (!s.apiRoom) return null` |
-| Store에 flat api* 필드 | God-store, reset 중복 | `apiRoom` 단일 객체 |
-| 동일 타입 재정의 | 드리프트 위험 | `import type { X } from "route"` |
-| route.ts에서 30줄+ transform | 핸들러 비대화 | `_lib.ts`에 파서 함수 추출 |
+### `domain/content/ports.ts`
+- `ContentProvider.getSiteContent()` — 사이트 콘텐츠 조회
+- `StoreInfoRepository.fetchStoreInfo()` — 숙소 정보 조회
 
 ---
 
@@ -140,33 +151,41 @@ useReservation (Zustand + sessionStorage persist)  ← lib/reservation/store.ts
 
 ### `useApiRooms(checkIn, checkOut, nights)`
 - **반환**: `{ storeData, loading, error }`
-- **책임**: fetch + abort + 에러 핸들링
-- **위치**: `lib/reservation/useApiRooms.ts`
+- **위치**: `application/hooks/useApiRooms.ts`
 
 ### `useSubmitReservation()`
 - **반환**: `{ submit, submitting, error, canSubmit }`
-- **책임**: store 검증 → API 호출 → 라우팅
-- **위치**: `lib/reservation/useSubmitReservation.ts`
+- **위치**: `application/hooks/useSubmitReservation.ts`
 
 ### `useStoreInfo()`
 - **반환**: `{ data, loading }`
-- **책임**: 숙소 기본 정보 조회 (홈페이지용)
-- **위치**: `lib/content/useStoreInfo.ts`
+- **위치**: `application/hooks/useStoreInfo.ts`
 
 ---
 
-## 7. API Route 구조 템플릿
+## 7. API Route 구조
 
 ```typescript
-// app/api/example/route.ts
+// app/api/example/route.ts — thin handler
 import { NextResponse } from "next/server";
-import { parseX, transformY } from "./_lib";  // transform은 _lib에
-
-export type ResponseType = { ... };  // 타입은 여기서 export
+import { fetchStoreDetail } from "@/adapters/coolstay/client";
+import { toApiRoom } from "@/adapters/coolstay/mappers";
 
 export async function GET(request: Request) {
-  // 1. Validate
-  // 2. Delegate
-  // 3. Respond
+  // 1. Validate params
+  // 2. Call adapter
+  // 3. Return response
 }
 ```
+
+---
+
+## 8. 금지 패턴 (Anti-Patterns)
+
+| 코드 | 이유 | 대안 |
+|------|------|------|
+| ui/ 내 `fetch()` | View와 IO 결합 | `application/hooks/`로 추출 |
+| `s.apiMotelKey!` | 런타임 에러 위험 | `if (!s.apiRoom) return null` |
+| domain/에서 adapters/ import | 의존성 역전 위반 | 포트 인터페이스 사용 |
+| 동일 타입 재정의 | 드리프트 위험 | `import type { X } from "domain/"` |
+| route.ts에서 30줄+ transform | 핸들러 비대화 | `adapters/coolstay/mappers.ts`에 추출 |

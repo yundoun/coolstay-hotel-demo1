@@ -1,28 +1,5 @@
 import { NextResponse } from "next/server";
-
-/** 임시 토큰을 발급받아 { access_token, secret } 반환 */
-async function getTemporaryToken(apiBase: string) {
-  const res = await fetch(`${apiBase}/api/v2/mobile/auth/sessions/temporary`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-  });
-
-  if (!res.ok) {
-    throw new Error(`임시 토큰 발급 실패 (${res.status})`);
-  }
-
-  const data = await res.json();
-  if (data.code !== "20000000") {
-    throw new Error(data.desc || `임시 토큰 발급 실패 (${data.code})`);
-  }
-
-  const token = data.result?.token;
-  if (!token?.access_token) {
-    throw new Error("임시 토큰 응답에 access_token이 없습니다");
-  }
-
-  return { accessToken: token.access_token, secret: token.secret };
-}
+import { getApiBase, getToken } from "@/adapters/coolstay/client";
 
 export async function POST(request: Request) {
   const body = await request.json();
@@ -34,7 +11,7 @@ export async function POST(request: Request) {
     let accessToken: string;
     let secret: string;
     try {
-      const token = await getTemporaryToken(apiBase);
+      const token = await getToken();
       accessToken = token.accessToken;
       secret = token.secret;
     } catch (e) {
@@ -48,7 +25,7 @@ export async function POST(request: Request) {
     // 2) 예약 요청 (app-token + app-secret-code 헤더 필수)
     let upstream: Response;
     try {
-      upstream = await fetch(`${apiBase}/api/v2/mobile/reserv/ready`, {
+      upstream = await fetch(`${getApiBase()}/api/v2/mobile/reserv/ready`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

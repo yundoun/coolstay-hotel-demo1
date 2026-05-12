@@ -1,24 +1,7 @@
 import { NextResponse } from "next/server";
-import { fetchStoreDetail, toApiRoom } from "../_lib";
-
-export type ApiRoom = {
-  itemKey: string;
-  packageKey: string;
-  name: string;
-  maxGuests: number;
-  image: string | null;
-  price: number;
-  dailyPrices: number[];
-  checkInTime: string;
-  checkOutTime: string;
-};
-
-export type RoomsResponse = {
-  motelKey: string;
-  storeName: string;
-  sitePayment: boolean;
-  rooms: ApiRoom[];
-};
+import { fetchStoreDetail } from "@/adapters/coolstay/client";
+import { toApiRoom } from "@/adapters/coolstay/mappers";
+import type { ApiRoom, RoomsResponse } from "@/adapters/coolstay/types";
 
 /** 예약용 — 날짜 기반 객실 + 실시간 가격 */
 export async function GET(request: Request) {

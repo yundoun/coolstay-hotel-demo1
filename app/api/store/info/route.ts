@@ -1,30 +1,7 @@
 import { NextResponse } from "next/server";
-import { fetchStoreDetail, toRoomType } from "../_lib";
-
-export type RoomType = {
-  itemKey: string;
-  name: string;
-  description: string;
-  maxGuests: number;
-  images: { url: string; thumbUrl: string }[];
-  basePrice: number;
-};
-
-export type StoreInfo = {
-  motelKey: string;
-  name: string;
-  greetingMsg: string;
-  phone: string;
-  address: string;
-  latitude: string;
-  longitude: string;
-  locationDesc: string;
-  parkingYn: boolean;
-  parkingInfo: string;
-  sitePayment: boolean;
-  images: { url: string; thumbUrl: string; description: string }[];
-  rooms: RoomType[];
-};
+import { fetchStoreDetail } from "@/adapters/coolstay/client";
+import { toRoomType } from "@/adapters/coolstay/mappers";
+import type { StoreInfo } from "@/adapters/coolstay/types";
 
 /** 홈 페이지용 — 숙소 기본 정보 + 객실 유형 (날짜 불필요) */
 export async function GET() {
