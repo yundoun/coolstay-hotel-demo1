@@ -1,20 +1,5 @@
 import { format, parseISO } from "date-fns";
-
-type ReservationReadyParams = {
-  hotelId: string;
-  roomId: string;
-  checkIn: string; // ISO date "yyyy-MM-dd"
-  checkOut: string;
-  guestName: string;
-  guestPhone: string;
-  totalPrice: number;
-  basePrice: number;
-};
-
-type ReservationReadyResponse = {
-  bookId: string;
-  status: string;
-};
+import type { ReservationReadyParams } from "@/domain/reservation/types";
 
 /** checkIn ISO date + time ("15:00" or "17") → yyyyMMddHHmmss */
 function toApiDateTime(isoDate: string, time: string): string {
@@ -27,15 +12,13 @@ function toApiDateTime(isoDate: string, time: string): string {
 
 export async function createGuestReservation(
   params: ReservationReadyParams,
-  checkInTime: string,
-  checkOutTime: string,
-): Promise<ReservationReadyResponse> {
+): Promise<{ bookId: string; status: string }> {
   const body = {
     motel_key: params.hotelId,
     item_key: params.roomId,
     item_type: "010102", // 숙박
-    book_start_dt: toApiDateTime(params.checkIn, checkInTime),
-    book_end_dt: toApiDateTime(params.checkOut, checkOutTime),
+    book_start_dt: toApiDateTime(params.checkIn, params.checkInTime),
+    book_end_dt: toApiDateTime(params.checkOut, params.checkOutTime),
     book_user_name: params.guestName,
     book_user_number: params.guestPhone.replace(/[^0-9]/g, ""),
     sms_auth_key: "",

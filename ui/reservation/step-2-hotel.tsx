@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { siteHotel, SITE_HOTEL_ID } from "@/adapters/static/hotel-provider";
+import { SITE_HOTEL_ID, siteHotel } from "@/hotel-data/hotel";
 import { useReservation } from "@/adapters/zustand/reservation-store";
 import type { ApiRoom } from "@/adapters/coolstay/types";
 import { useApiRooms } from "@/application/hooks/useApiRooms";

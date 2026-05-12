@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check } from "lucide-react";
 import { useReservation } from "@/adapters/zustand/reservation-store";
-import { getHotel, getRoom } from "@/adapters/static/hotel-provider";
+import { siteHotel } from "@/hotel-data/hotel";
 import { formatKoDate, krw, nightsBetween } from "@/domain/shared/utils";
 
 export function ReservationCompleteClient() {
@@ -18,32 +18,23 @@ export function ReservationCompleteClient() {
     setMounted(true);
   }, []);
 
-  const isApiMode = Boolean(s.apiRoom);
-
   useEffect(() => {
     if (!mounted) return;
-    if (!s.reservationNumber || !s.hotelId) {
+    if (!s.reservationNumber || !s.apiRoom) {
       router.replace("/reservation?step=1");
     }
-  }, [mounted, s.reservationNumber, s.hotelId, router]);
+  }, [mounted, s.reservationNumber, s.apiRoom, router]);
 
-  const hotel = s.hotelId ? getHotel(s.hotelId) : null;
-  const room = s.roomId ? getRoom(s.roomId) : null;
   const nights = nightsBetween(s.checkIn, s.checkOut);
+  const apiRoom = s.apiRoom;
 
-  const displayRoomName = isApiMode ? s.apiRoom?.roomName : room?.name;
-  const displayCheckInTime = isApiMode ? `${s.apiRoom?.checkInTime}:00` : hotel?.checkInTime;
-  const displayCheckOutTime = isApiMode ? `${s.apiRoom?.checkOutTime}:00` : hotel?.checkOutTime;
-  const total = isApiMode ? (s.apiRoom?.price ?? 0) : (room ? room.basePrice * nights : 0);
-
-  if (!mounted || !hotel || !s.reservationNumber) return null;
-  if (!isApiMode && !room) return null;
+  if (!mounted || !apiRoom || !s.reservationNumber) return null;
 
   return (
     <>
       {/* Hero */}
       <section className="relative h-[40svh] min-h-[320px] w-full overflow-hidden">
-        <Image src={hotel.heroImage} alt={hotel.name} fill priority sizes="100vw" className="object-cover" />
+        <Image src={siteHotel.heroImage} alt={siteHotel.name} fill priority sizes="100vw" className="object-cover" />
         <div className="absolute inset-0 hero-veil" aria-hidden />
       </section>
 
@@ -71,19 +62,14 @@ export function ReservationCompleteClient() {
           <article className="mt-16 border border-[var(--color-line)] bg-white rounded-[2px]">
             <section className="flex flex-col gap-6 p-8 md:flex-row md:items-center">
               <div className="relative aspect-[16/10] w-full md:w-[280px] shrink-0 overflow-hidden rounded-[2px] bg-[var(--color-line-soft)]">
-                <Image src={hotel.heroImage} alt={hotel.name} fill sizes="280px" className="object-cover" />
+                <Image src={siteHotel.heroImage} alt={siteHotel.name} fill sizes="280px" className="object-cover" />
               </div>
               <div className="flex-1">
                 <span className="t-label-caps text-[var(--color-ink-3)]">
-                  {hotel.city} · {hotel.grade}-Star Hotel
+                  {siteHotel.city} · {siteHotel.grade}-Star Hotel
                 </span>
-                <h3 className="t-h3 mt-2">{hotel.name}</h3>
-                <div className="mt-4 t-h4">{displayRoomName}</div>
-                {!isApiMode && room && (
-                  <div className="t-caption text-[var(--color-ink-3)] mt-1">
-                    {room.sizeSqm}㎡ · {room.bedType}베드 · {room.view}
-                  </div>
-                )}
+                <h3 className="t-h3 mt-2">{siteHotel.name}</h3>
+                <div className="mt-4 t-h4">{apiRoom.roomName}</div>
               </div>
             </section>
 
@@ -91,8 +77,8 @@ export function ReservationCompleteClient() {
 
             <section className="p-8">
               <div className="grid grid-cols-2 gap-5 md:grid-cols-4">
-                <Row label="체크인" value={`${formatKoDate(s.checkIn)} · ${displayCheckInTime}`} />
-                <Row label="체크아웃" value={`${formatKoDate(s.checkOut)} · ${displayCheckOutTime}`} />
+                <Row label="체크인" value={`${formatKoDate(s.checkIn)} · ${apiRoom.checkInTime}:00`} />
+                <Row label="체크아웃" value={`${formatKoDate(s.checkOut)} · ${apiRoom.checkOutTime}:00`} />
                 <Row label="기간" value={`${nights}박 ${nights + 1}일`} />
                 <Row label="인원" value={`성인 ${s.adults}${s.children > 0 ? ` · 아동 ${s.children}` : ""}`} />
               </div>
@@ -121,7 +107,7 @@ export function ReservationCompleteClient() {
             <section className="p-8">
               <div className="flex items-baseline justify-between">
                 <span className="t-h4">결제 예정 합계</span>
-                <span className="t-price">{krw(total)}</span>
+                <span className="t-price">{krw(apiRoom.price)}</span>
               </div>
               <div className="mt-3 t-caption text-[var(--color-ink-3)]">
                 현장결제 — 체크인 시 호텔 프론트에서 결제가 진행됩니다.

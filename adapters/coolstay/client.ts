@@ -1,7 +1,7 @@
 /** CoolStay upstream API 클라이언트 */
 
 const API_BASE = process.env.COOLSTAY_API_BASE;
-export const MOTEL_KEY = "D_KCST_20250619130000_Gr0DTs";
+export const MOTEL_KEY = process.env.COOLSTAY_MOTEL_KEY ?? "";
 
 export function getApiBase() {
   if (!API_BASE) throw new Error("COOLSTAY_API_BASE 미설정");
@@ -20,6 +20,7 @@ export async function getToken() {
 
 /** details/list upstream 호출 공통 */
 export async function fetchStoreDetail(params: { checkIn?: string; checkOut?: string }) {
+  if (!MOTEL_KEY) throw new Error("COOLSTAY_MOTEL_KEY 미설정");
   const { accessToken, secret } = await getToken();
 
   const qs = new URLSearchParams({ motel_key: MOTEL_KEY, pure_click_yn: "N" });

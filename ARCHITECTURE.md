@@ -1,31 +1,40 @@
-# 꿀스테이 호텔 데모 — 아키텍처 가이드 (Ports & Adapters)
+# 꿀스테이 호텔 데모 — 아키텍처 가이드 (템플릿 아키텍처)
 
 > 이 문서는 코드 품질 게이트 역할을 합니다.
 > 하네스(hooks)가 편집 시 이 규칙을 자동으로 검증합니다.
 
 ---
 
-## 1. Hexagonal Architecture 개요
+## 1. 템플릿 아키텍처 개요
+
+이 프로젝트는 **하나의 코드베이스(템플릿)로 호텔 데이터만 교체하면서 여러 호텔 사이트를 양산**하는 구조입니다.
+
+핵심 원칙: **"바뀌는 것"과 "바뀌지 않는 것"을 물리적으로 분리**
 
 ```
           ┌──────────────────────────┐
-          │       domain/            │  순수 타입·포트·유틸
-          │  (외부 의존 0)           │  adapters/app/ui import 금지
+          │      hotel-data/         │  🔄 호텔별 교체 데이터 (단일 교체 경계)
+          │  (domain/ 타입만 import)  │  Hotel, Room[], SiteContent
           └────────────┬─────────────┘
-                       │ implements
+                       │ consumed by
           ┌────────────▼─────────────┐
-          │      adapters/           │  CoolStay PMS, 정적 데이터, Zustand
-          │  (포트 구현체)           │  domain/ + 외부 라이브러리만 import
+          │       domain/            │  순수 타입·유틸
+          │  (외부 의존 0)           │
           └────────────┬─────────────┘
-                       │ uses
+                       │
           ┌────────────▼─────────────┐
-          │    application/          │  훅·서비스가 어댑터를 조합
-          │  (유스케이스 오케스트레이션)  │  domain/, adapters/ import
+          │      adapters/           │  CoolStay PMS, Zustand
+          │  (외부 API 통합)         │  domain/, hotel-data/ import
           └────────────┬─────────────┘
-                       │ uses
+                       │
+          ┌────────────▼─────────────┐
+          │    application/          │  훅·서비스 오케스트레이션
+          │                          │  domain/, adapters/ import
+          └────────────┬─────────────┘
+                       │
           ┌────────────▼─────────────┐
           │        ui/               │  프레젠테이션 컴포넌트
-          │   (props → JSX)          │  domain/(타입), application/(훅), ui/lib/
+          │   (props → JSX)          │  domain/, application/, hotel-data/, ui/lib/
           └────────────┬─────────────┘
                        │ composed by
           ┌────────────▼─────────────┐
@@ -39,27 +48,26 @@
 ## 2. 디렉토리 구조
 
 ```
-domain/                          ← 순수 타입·포트·유틸 (date-fns 허용)
+hotel-data/                      ← 🔄 호텔별 교체 데이터 (단일 교체 경계)
+  hotel.ts                       ← Hotel 기본 정보, Room[], 가격, 이미지
+  content.ts                     ← 인사말, 소개 블록, 찾아오는 길
+  index.ts                       ← barrel re-export
+
+domain/                          ← 순수 타입·유틸 (date-fns 허용)
   hotel/
-    types.ts                     ← Hotel, Room, Region, Reservation
-    ports.ts                     ← interface HotelProvider
+    types.ts                     ← Hotel, Room
   reservation/
     types.ts                     ← ApiRoomSelection, ReservationReadyParams, ReservationResult
-    ports.ts                     ← interface RoomRepository, ReservationGateway
   content/
     types.ts                     ← SiteContent, AboutBlock
-    ports.ts                     ← interface ContentProvider, StoreInfoRepository
   shared/
     utils.ts                     ← krw, formatKoDate, nightsBetween, todayISO, addDaysISO
 
-adapters/                        ← 포트 구현 (교체 가능 단위)
+adapters/                        ← 외부 시스템 통합 (교체 불필요)
   coolstay/
-    client.ts                    ← getToken, getApiBase, fetchStoreDetail, MOTEL_KEY
+    client.ts                    ← getToken, getApiBase, fetchStoreDetail (MOTEL_KEY는 환경변수)
     mappers.ts                   ← toApiRoom, toRoomType, parseExtras
     types.ts                     ← ApiRoom, RoomsResponse, StoreInfo, RoomType
-  static/
-    hotel-provider.ts            ← siteHotel, rooms[], getHotel, getRoom, SITE_HOTEL_ID
-    content-provider.ts          ← siteContent 데이터
   zustand/
     reservation-store.ts         ← Zustand persist store
 
@@ -95,7 +103,7 @@ app/                             ← Next.js 라우팅 (얇은 진입점)
   page.tsx, layout.tsx, globals.css
   reservation/page.tsx
   reservation/complete/page.tsx
-  api/store/rooms/route.ts       ← validate → adapter 호출 → respond
+  api/store/rooms/route.ts
   api/store/info/route.ts
   api/reservation/ready/route.ts
 ```
@@ -106,11 +114,12 @@ app/                             ← Next.js 라우팅 (얇은 진입점)
 
 | 규칙 | 설명 |
 |------|------|
-| **H1** | `domain/`은 `adapters/`, `application/`, `ui/`, `app/`을 import할 수 없다. |
-| **H2** | `adapters/`는 `domain/`과 외부 라이브러리만 import한다. |
+| **H1** | `domain/`은 `adapters/`, `application/`, `ui/`, `app/`, `hotel-data/`를 import할 수 없다. |
+| **H2** | `adapters/`는 `domain/`, `hotel-data/`와 외부 라이브러리만 import한다. |
 | **H3** | `application/`은 `domain/`과 `adapters/`만 import한다. |
-| **H4** | `ui/`는 `domain/`(타입), `application/`(훅), `ui/lib/`만 import한다. |
-| **H5** | `ui/`는 `adapters/`를 직접 import할 수 없다. (Zustand store, static 예외) |
+| **H4** | `ui/`는 `domain/`(타입), `application/`(훅), `hotel-data/`(데이터), `ui/lib/`만 import한다. |
+| **H5** | `ui/`는 `adapters/`를 직접 import할 수 없다. (Zustand store 예외) |
+| **H6** | `hotel-data/`는 `domain/`만 import할 수 있다. |
 | **R1** | `ui/` 컴포넌트에 `fetch` 금지 — 데이터 페칭은 `application/hooks/`를 거친다. |
 | **R4** | `ui/`에서 타입 재정의 금지 — `domain/` 또는 `adapters/` 타입을 `import type`으로 소비. |
 | **S1** | flat api 필드 사용 금지 — `apiRoom` 단일 객체로 접근. |
@@ -132,22 +141,7 @@ useReservation (Zustand + sessionStorage persist)  ← adapters/zustand/reservat
 
 ---
 
-## 5. 포트 인터페이스
-
-### `domain/reservation/ports.ts`
-- `RoomRepository.fetchRooms(checkIn, checkOut)` — 날짜 기반 객실 조회
-- `ReservationGateway.submitReservation(params)` — 예약 제출
-
-### `domain/hotel/ports.ts`
-- `HotelProvider` — getHotel, getRoom, getSiteHotel, getAllRooms
-
-### `domain/content/ports.ts`
-- `ContentProvider.getSiteContent()` — 사이트 콘텐츠 조회
-- `StoreInfoRepository.fetchStoreInfo()` — 숙소 정보 조회
-
----
-
-## 6. 커스텀 훅 계약
+## 5. 커스텀 훅 계약
 
 ### `useApiRooms(checkIn, checkOut, nights)`
 - **반환**: `{ storeData, loading, error }`
@@ -163,7 +157,7 @@ useReservation (Zustand + sessionStorage persist)  ← adapters/zustand/reservat
 
 ---
 
-## 7. API Route 구조
+## 6. API Route 구조
 
 ```typescript
 // app/api/example/route.ts — thin handler
@@ -180,12 +174,113 @@ export async function GET(request: Request) {
 
 ---
 
-## 8. 금지 패턴 (Anti-Patterns)
+## 7. 금지 패턴 (Anti-Patterns)
 
 | 코드 | 이유 | 대안 |
 |------|------|------|
 | ui/ 내 `fetch()` | View와 IO 결합 | `application/hooks/`로 추출 |
 | `s.apiMotelKey!` | 런타임 에러 위험 | `if (!s.apiRoom) return null` |
-| domain/에서 adapters/ import | 의존성 역전 위반 | 포트 인터페이스 사용 |
+| domain/에서 adapters/ import | 의존성 역전 위반 | domain 타입 사용 |
 | 동일 타입 재정의 | 드리프트 위험 | `import type { X } from "domain/"` |
 | route.ts에서 30줄+ transform | 핸들러 비대화 | `adapters/coolstay/mappers.ts`에 추출 |
+| hotel-data/에서 adapters/ import | 교체 경계 오염 | domain/ 타입만 import |
+
+---
+
+## 8. 새 호텔 배포 가이드
+
+새 호텔 사이트를 만들 때 **`hotel-data/` 폴더와 환경변수만 교체**하면 됩니다.
+
+### Step 1: 호텔 데이터 교체
+
+`hotel-data/hotel.ts`를 새 호텔 정보로 교체:
+
+```typescript
+import type { Hotel, Room } from "@/domain/hotel/types";
+
+export const SITE_HOTEL_ID = "new-hotel-id";
+
+export const siteHotel: Hotel = {
+  id: SITE_HOTEL_ID,
+  name: "새 호텔명",
+  nameEn: "New Hotel Name",
+  // ... Hotel 타입의 모든 필드 채우기
+};
+
+export const rooms: Room[] = [
+  // ... Room 타입의 객실 데이터
+];
+
+export function getHotel(id: string): Hotel | undefined { ... }
+export function getRoom(id: string): Room | undefined { ... }
+```
+
+### Step 2: 콘텐츠 교체
+
+`hotel-data/content.ts`를 새 콘텐츠로 교체:
+
+```typescript
+import type { SiteContent } from "@/domain/content/types";
+
+export const siteContent: SiteContent = {
+  greeting: { ... },
+  about: [ ... ],
+  directions: { ... },
+};
+```
+
+### Step 3: 이미지 교체
+
+`public/hotels/<hotel-id>/` 디렉토리에 이미지 배치:
+- `hero.jpg` — 히어로 이미지
+- `gallery-*.jpg` — 갤러리 이미지
+- `rooms/*.jpg` — 객실 이미지
+
+### Step 4: 환경변수 설정
+
+```env
+COOLSTAY_API_BASE=http://dev.server.coolstay.co.kr:10000
+COOLSTAY_MOTEL_KEY=<새 호텔의 CoolStay PMS 키>
+```
+
+### 검증
+
+- `npx tsc --noEmit` — Hotel, Room, SiteContent 타입 필드 누락 시 컴파일 에러
+- `npm run dev` — 브라우저에서 호텔명, 객실, 예약 플로우 확인
+
+---
+
+## 9. 데이터 플로우
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    DEPLOYMENT CONFIG                         │
+│  .env.local: COOLSTAY_API_BASE, COOLSTAY_MOTEL_KEY           │
+└──────────────────────┬──────────────────────────────────────┘
+                       │
+┌──────────────────────▼──────────────────────────────────────┐
+│                    hotel-data/   (SWAP THIS)                 │
+│  hotel.ts : siteHotel, rooms[], SITE_HOTEL_ID                │
+│  content.ts : siteContent (greeting, about, directions)      │
+│  + public/hotels/<slug>/  (images)                           │
+└──────┬──────────────────────────────┬───────────────────────┘
+       │                              │
+       ▼                              ▼
+  ┌──────────┐                 ┌──────────────┐
+  │   ui/    │                 │  adapters/   │
+  │  header  │ ◄── siteHotel   │  zustand/   │ ◄── SITE_HOTEL_ID
+  │  footer  │     .name       │  coolstay/  │ ◄── MOTEL_KEY (env)
+  │  home/   │                 └──────┬───────┘
+  └────┬─────┘                        │
+       │                              ▼
+       │                     ┌────────────────┐
+       │                     │ application/   │
+       │                     │ hooks/services │
+       └─────────────────────┴────────────────┘
+                       │
+                       ▼
+              ┌────────────────┐
+              │     app/       │
+              │  pages/routes  │
+              └────────────────┘
+```

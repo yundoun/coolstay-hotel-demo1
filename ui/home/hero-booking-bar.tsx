@@ -7,7 +7,7 @@ import { ko } from "date-fns/locale";
 import { AnimatePresence, motion } from "framer-motion";
 import { addDaysISO, todayISO, nightsBetween } from "@/domain/shared/utils";
 import { CalendarWidget } from "@/ui/shared/calendar-widget";
-import { SITE_HOTEL_ID } from "@/adapters/static/hotel-provider";
+import { SITE_HOTEL_ID } from "@/hotel-data/hotel";
 
 function parseLocalDate(iso: string): Date {
   const [y, m, d] = iso.split("-").map(Number);

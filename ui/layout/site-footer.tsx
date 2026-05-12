@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { siteHotel } from "@/adapters/static/hotel-provider";
+import { siteHotel } from "@/hotel-data/hotel";
 
 export function SiteFooter() {
   return (

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import { cn } from "@/ui/lib/cn";
+import { siteHotel } from "@/hotel-data/hotel";
 
 const NAV_SECTIONS = [
   { id: "rooms", label: "객실" },
@@ -67,7 +68,7 @@ export function SiteHeader() {
             )}
           />
           <span className="t-label-caps text-current opacity-80 hidden sm:inline">
-            소월 서울
+            {siteHotel.name}
           </span>
         </Link>
 

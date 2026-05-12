@@ -1,6 +1,6 @@
 import Image from "next/image";
-import { siteHotel } from "@/adapters/static/hotel-provider";
-import { siteContent } from "@/adapters/static/content-provider";
+import { siteHotel } from "@/hotel-data/hotel";
+import { siteContent } from "@/hotel-data/content";
 import { Reveal } from "@/ui/shared/reveal";
 import { AboutBlocks } from "@/ui/home/about-blocks";
 import { ApiRoomTabs } from "@/ui/home/api-room-tabs";

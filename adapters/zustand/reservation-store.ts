@@ -3,7 +3,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { addDaysISO, todayISO } from "@/domain/shared/utils";
-import { SITE_HOTEL_ID } from "@/adapters/static/hotel-provider";
+import { SITE_HOTEL_ID } from "@/hotel-data/hotel";
 import type { ApiRoomSelection } from "@/domain/reservation/types";
 
 /* ── Re-export for consumer convenience ── */

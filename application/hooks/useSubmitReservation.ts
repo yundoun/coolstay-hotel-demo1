@@ -25,20 +25,18 @@ export function useSubmitReservation() {
 
     try {
       const { apiRoom } = s;
-      const result = await createGuestReservation(
-        {
-          hotelId: apiRoom.motelKey,
-          roomId: apiRoom.packageKey,
-          checkIn: s.checkIn,
-          checkOut: s.checkOut,
-          guestName: s.guestName,
-          guestPhone: s.guestPhone,
-          totalPrice: apiRoom.price,
-          basePrice: apiRoom.price,
-        },
-        apiRoom.checkInTime,
-        apiRoom.checkOutTime,
-      );
+      const result = await createGuestReservation({
+        hotelId: apiRoom.motelKey,
+        roomId: apiRoom.packageKey,
+        checkIn: s.checkIn,
+        checkOut: s.checkOut,
+        guestName: s.guestName,
+        guestPhone: s.guestPhone,
+        totalPrice: apiRoom.price,
+        basePrice: apiRoom.price,
+        checkInTime: apiRoom.checkInTime,
+        checkOutTime: apiRoom.checkOutTime,
+      });
       s.setReservationNumber(result.bookId);
       router.push("/reservation/complete");
     } catch (err) {
