@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { StepIndicator } from "@/components/step-indicator";
+import { StepIndicator } from "@/components/shared/step-indicator";
 import { Step1Dates } from "./step-1-dates";
 import { Step2Hotel } from "./step-2-hotel";
 import { Step3Guest } from "./step-3-guest";

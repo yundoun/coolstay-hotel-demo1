@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { fetchStoreDetail } from "../_lib";
+import { fetchStoreDetail, toApiRoom } from "../_lib";
 
 export type ApiRoom = {
   itemKey: string;
@@ -11,6 +11,13 @@ export type ApiRoom = {
   dailyPrices: number[];
   checkInTime: string;
   checkOutTime: string;
+};
+
+export type RoomsResponse = {
+  motelKey: string;
+  storeName: string;
+  sitePayment: boolean;
+  rooms: ApiRoom[];
 };
 
 /** 예약용 — 날짜 기반 객실 + 실시간 가격 */
@@ -25,44 +32,14 @@ export async function GET(request: Request) {
 
   try {
     const motel = await fetchStoreDetail({ checkIn, checkOut });
-
-    const items: ApiRoom[] = (motel.items ?? []).map((item: any) => {
-      const sub = item.sub_items?.[0];
-      if (!sub) return null;
-
-      const extras: Record<string, string> = {};
-      for (const e of item.extras ?? []) extras[e.code] = e.value;
-
-      const dailyPrices: number[] = [];
-      let stime = "";
-      let etime = "";
-      for (const d of sub.daily_extras ?? []) {
-        const dex: Record<string, string> = {};
-        for (const e of d.extras ?? []) dex[e.code] = e.value;
-        dailyPrices.push(Number(dex.PRICE ?? 0));
-        if (!stime) stime = dex.STIME ?? "";
-        etime = dex.ETIME ?? "";
-      }
-
-      return {
-        itemKey: item.key,
-        packageKey: sub.key,
-        name: item.name,
-        maxGuests: Number(extras.MAX ?? 2),
-        image: item.images?.[0]?.thumb_url ?? null,
-        price: sub.price ?? dailyPrices.reduce((a: number, b: number) => a + b, 0),
-        dailyPrices,
-        checkInTime: stime,
-        checkOutTime: etime,
-      } satisfies ApiRoom;
-    }).filter(Boolean);
+    const rooms = (motel.items ?? []).map(toApiRoom).filter(Boolean) as ApiRoom[];
 
     return NextResponse.json({
       motelKey: motel.key,
       storeName: motel.name,
       sitePayment: motel.site_payment_yn === "Y",
-      rooms: items,
-    });
+      rooms,
+    } satisfies RoomsResponse);
   } catch (err) {
     const msg = err instanceof Error ? err.message : "객실 조회 실패";
     return NextResponse.json({ message: msg }, { status: 502 });

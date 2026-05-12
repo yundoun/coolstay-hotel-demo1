@@ -1,10 +1,10 @@
 import Image from "next/image";
 import { siteHotel } from "@/lib/hotels";
-import { siteContent } from "@/lib/site-content";
-import { Reveal } from "@/components/reveal";
-import { AboutBlocks } from "@/components/about-blocks";
-import { ApiRoomTabs } from "@/components/api-room-tabs";
-import { OnepageReservation } from "@/components/onepage-reservation";
+import { siteContent } from "@/lib/content/site-content";
+import { Reveal } from "@/components/shared/reveal";
+import { AboutBlocks } from "@/components/home/about-blocks";
+import { ApiRoomTabs } from "@/components/home/api-room-tabs";
+import { OnepageReservation } from "@/components/reservation/onepage-reservation";
 
 export default function HomePage() {
   const { greeting, about, directions } = siteContent;

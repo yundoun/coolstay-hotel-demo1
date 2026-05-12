@@ -4,37 +4,17 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { siteHotel, SITE_HOTEL_ID } from "@/lib/hotels";
-import { useReservation } from "@/lib/reservation-store";
+import { useReservation } from "@/lib/reservation/store";
+import type { ApiRoom } from "@/app/api/store/rooms/route";
+import { useApiRooms } from "@/lib/reservation/useApiRooms";
 import { cn, krw, nightsBetween } from "@/lib/utils";
-import { format, parseISO } from "date-fns";
 import { AnimatePresence, motion } from "framer-motion";
-
-type ApiRoom = {
-  itemKey: string;
-  packageKey: string;
-  name: string;
-  maxGuests: number;
-  image: string | null;
-  price: number;
-  dailyPrices: number[];
-  checkInTime: string;
-  checkOutTime: string;
-};
-
-type StoreData = {
-  motelKey: string;
-  storeName: string;
-  sitePayment: boolean;
-  rooms: ApiRoom[];
-};
 
 export function Step2Hotel({ onNext, onPrev }: { onNext?: () => void; onPrev?: () => void } = {}) {
   const s = useReservation();
   const nights = nightsBetween(s.checkIn, s.checkOut);
+  const { storeData, loading, error } = useApiRooms(s.checkIn, s.checkOut, nights);
 
-  const [storeData, setStoreData] = useState<StoreData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [selectedPkg, setSelectedPkg] = useState<string | null>(null);
 
   // Auto-select the site hotel
@@ -45,48 +25,23 @@ export function Step2Hotel({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Fetch rooms from API
+  // storeData 변경 시 선택 초기화
   useEffect(() => {
-    if (!s.checkIn || !s.checkOut || nights <= 0) return;
-
-    const controller = new AbortController();
-    const checkIn = format(parseISO(s.checkIn), "yyyyMMdd");
-    const checkOut = format(parseISO(s.checkOut), "yyyyMMdd");
-
-    setLoading(true);
-    setError(null);
-
-    fetch(`/api/store/rooms?checkIn=${checkIn}&checkOut=${checkOut}`, {
-      signal: controller.signal,
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error("객실 조회 실패");
-        return res.json();
-      })
-      .then((data: StoreData) => {
-        setStoreData(data);
-        setSelectedPkg(null);
-        s.setApiStore({
-          motelKey: data.motelKey,
-          storeName: data.storeName,
-          sitePayment: data.sitePayment,
-        });
-      })
-      .catch((err) => {
-        if (err.name !== "AbortError") setError(err.message);
-      })
-      .finally(() => setLoading(false));
-
-    return () => controller.abort();
-  }, [s.checkIn, s.checkOut]);
+    if (storeData) {
+      setSelectedPkg(null);
+    }
+  }, [storeData]);
 
   const selectedRoom = storeData?.rooms.find((r) => r.packageKey === selectedPkg) ?? null;
 
   const handleSelect = (room: ApiRoom) => {
+    if (!storeData) return;
     setSelectedPkg(room.packageKey);
     s.setRoom(room.itemKey);
     s.setApiRoom({
-      motelKey: storeData!.motelKey,
+      motelKey: storeData.motelKey,
+      storeName: storeData.storeName,
+      sitePayment: storeData.sitePayment,
       packageKey: room.packageKey,
       roomName: room.name,
       roomImage: room.image,

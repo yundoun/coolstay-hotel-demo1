@@ -1,5 +1,14 @@
 import { NextResponse } from "next/server";
-import { fetchStoreDetail } from "../_lib";
+import { fetchStoreDetail, toRoomType } from "../_lib";
+
+export type RoomType = {
+  itemKey: string;
+  name: string;
+  description: string;
+  maxGuests: number;
+  images: { url: string; thumbUrl: string }[];
+  basePrice: number;
+};
 
 export type StoreInfo = {
   motelKey: string;
@@ -17,41 +26,11 @@ export type StoreInfo = {
   rooms: RoomType[];
 };
 
-export type RoomType = {
-  itemKey: string;
-  name: string;
-  description: string;
-  maxGuests: number;
-  images: { url: string; thumbUrl: string }[];
-  basePrice: number;
-};
-
 /** 홈 페이지용 — 숙소 기본 정보 + 객실 유형 (날짜 불필요) */
 export async function GET() {
   try {
     const motel = await fetchStoreDetail({});
-
-    const extras = (item: any): Record<string, string> => {
-      const map: Record<string, string> = {};
-      for (const e of item.extras ?? []) map[e.code] = e.value;
-      return map;
-    };
-
-    const rooms: RoomType[] = (motel.items ?? []).map((item: any) => {
-      const ex = extras(item);
-      const sub = item.sub_items?.[0];
-      return {
-        itemKey: item.key,
-        name: item.name,
-        description: item.description ?? "",
-        maxGuests: Number(ex.MAX ?? 2),
-        images: (item.images ?? []).map((img: any) => ({
-          url: img.url,
-          thumbUrl: img.thumb_url,
-        })),
-        basePrice: sub?.price ?? Number(item.price ?? 0),
-      } satisfies RoomType;
-    });
+    const rooms = (motel.items ?? []).map(toRoomType);
 
     const storeImages = (motel.images ?? []).map((img: any) => ({
       url: img.url as string,

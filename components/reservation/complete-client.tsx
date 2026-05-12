@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check } from "lucide-react";
-import { useReservation } from "@/lib/reservation-store";
+import { useReservation } from "@/lib/reservation/store";
 import { getHotel, getRoom } from "@/lib/hotels";
 import { formatKoDate, krw, nightsBetween } from "@/lib/utils";
 
@@ -18,7 +18,7 @@ export function ReservationCompleteClient() {
     setMounted(true);
   }, []);
 
-  const isApiMode = Boolean(s.apiPackageKey);
+  const isApiMode = Boolean(s.apiRoom);
 
   useEffect(() => {
     if (!mounted) return;
@@ -31,10 +31,10 @@ export function ReservationCompleteClient() {
   const room = s.roomId ? getRoom(s.roomId) : null;
   const nights = nightsBetween(s.checkIn, s.checkOut);
 
-  const displayRoomName = isApiMode ? s.apiRoomName : room?.name;
-  const displayCheckInTime = isApiMode ? `${s.apiCheckInTime}:00` : hotel?.checkInTime;
-  const displayCheckOutTime = isApiMode ? `${s.apiCheckOutTime}:00` : hotel?.checkOutTime;
-  const total = isApiMode ? (s.apiPrice ?? 0) : (room ? room.basePrice * nights : 0);
+  const displayRoomName = isApiMode ? s.apiRoom?.roomName : room?.name;
+  const displayCheckInTime = isApiMode ? `${s.apiRoom?.checkInTime}:00` : hotel?.checkInTime;
+  const displayCheckOutTime = isApiMode ? `${s.apiRoom?.checkOutTime}:00` : hotel?.checkOutTime;
+  const total = isApiMode ? (s.apiRoom?.price ?? 0) : (room ? room.basePrice * nights : 0);
 
   if (!mounted || !hotel || !s.reservationNumber) return null;
   if (!isApiMode && !room) return null;

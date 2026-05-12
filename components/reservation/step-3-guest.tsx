@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useReservation } from "@/lib/reservation-store";
+import { useReservation } from "@/lib/reservation/store";
 import { formatKoDate, krw, nightsBetween } from "@/lib/utils";
 
 const schema = z.object({
@@ -24,9 +24,9 @@ export function Step3Guest({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
   const s = useReservation();
   const router = useRouter();
   const nights = nightsBetween(s.checkIn, s.checkOut);
-  const storeName = s.apiStoreName;
-  const roomName = s.apiRoomName;
-  const total = s.apiPrice ?? 0;
+  const storeName = s.apiRoom?.storeName ?? null;
+  const roomName = s.apiRoom?.roomName ?? null;
+  const total = s.apiRoom?.price ?? 0;
 
   const {
     register,
@@ -79,12 +79,12 @@ export function Step3Guest({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
         <aside className="border border-[var(--color-line)] bg-white rounded-[2px] h-fit overflow-hidden">
           {storeName && roomName && (
             <>
-              {s.apiRoomImage && (
+              {s.apiRoom?.roomImage && (
                 <div className="relative aspect-[16/10] w-full bg-[var(--color-line-soft)]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={s.apiRoomImage}
-                    alt={roomName}
+                    src={s.apiRoom.roomImage}
+                    alt={roomName ?? ""}
                     className="absolute inset-0 h-full w-full object-cover"
                   />
                 </div>

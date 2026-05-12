@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useReservation } from "@/lib/reservation-store";
+import { useReservation } from "@/lib/reservation/store";
 import { formatKoDate, nightsBetween, todayISO } from "@/lib/utils";
 
 export function Step1Dates({ onNext }: { onNext?: () => void } = {}) {

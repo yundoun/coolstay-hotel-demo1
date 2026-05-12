@@ -1,10 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useReservation } from "@/lib/reservation-store";
-import { createGuestReservation } from "@/lib/reservation-api";
+import { useReservation } from "@/lib/reservation/store";
+import { useSubmitReservation } from "@/lib/reservation/useSubmitReservation";
 import {
   formatKoDate,
   krw,
@@ -13,47 +12,16 @@ import {
 
 export function Step4Review({ onPrev }: { onPrev?: () => void } = {}) {
   const s = useReservation();
-  const router = useRouter();
+  const { submit, submitting, error } = useSubmitReservation();
   const [agree, setAgree] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const nights = nightsBetween(s.checkIn, s.checkOut);
-  const storeName = s.apiStoreName;
-  const roomName = s.apiRoomName;
-  const total = s.apiPrice ?? 0;
-  const checkInTime = s.apiCheckInTime ? `${s.apiCheckInTime}:00` : "";
-  const checkOutTime = s.apiCheckOutTime ? `${s.apiCheckOutTime}:00` : "";
+  const room = s.apiRoom;
 
-  if (!storeName || !roomName) return null;
+  if (!room) return null;
 
-  const onConfirm = async () => {
-    if (!agree || submitting) return;
-    setSubmitting(true);
-    setError(null);
-
-    try {
-      const result = await createGuestReservation(
-        {
-          hotelId: s.apiMotelKey!,
-          roomId: s.apiPackageKey!,
-          checkIn: s.checkIn,
-          checkOut: s.checkOut,
-          guestName: s.guestName,
-          guestPhone: s.guestPhone,
-          totalPrice: total,
-          basePrice: total,
-        },
-        s.apiCheckInTime ?? "",
-        s.apiCheckOutTime ?? "",
-      );
-      s.setReservationNumber(result.bookId);
-      router.push("/reservation/complete");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "예약 중 오류가 발생했습니다.");
-      setSubmitting(false);
-    }
-  };
+  const checkInTime = room.checkInTime ? `${room.checkInTime}:00` : "";
+  const checkOutTime = room.checkOutTime ? `${room.checkOutTime}:00` : "";
 
   return (
     <div className="mx-auto max-w-[960px]">
@@ -66,19 +34,19 @@ export function Step4Review({ onPrev }: { onPrev?: () => void } = {}) {
       <article className="mt-12 border border-[var(--color-line)] bg-white rounded-[2px]">
         {/* Hotel + Room */}
         <section className="flex flex-col gap-6 p-8 md:flex-row md:items-center">
-          {s.apiRoomImage && (
+          {room.roomImage && (
             <div className="relative aspect-[16/10] w-full md:w-[280px] shrink-0 overflow-hidden rounded-[2px] bg-[var(--color-line-soft)]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={s.apiRoomImage} alt={roomName!} className="absolute inset-0 h-full w-full object-cover" />
+              <img src={room.roomImage} alt={room.roomName} className="absolute inset-0 h-full w-full object-cover" />
             </div>
           )}
           <div className="flex-1">
-            <h3 className="t-h3">{storeName}</h3>
+            <h3 className="t-h3">{room.storeName}</h3>
             <div className="mt-4 flex flex-col gap-1">
-              <div className="t-h4">{roomName}</div>
-              {s.apiMaxGuests && (
+              <div className="t-h4">{room.roomName}</div>
+              {room.maxGuests && (
                 <div className="t-caption text-[var(--color-ink-3)]">
-                  최대 {s.apiMaxGuests}인
+                  최대 {room.maxGuests}인
                 </div>
               )}
             </div>
@@ -153,7 +121,7 @@ export function Step4Review({ onPrev }: { onPrev?: () => void } = {}) {
               <span>
                 {nights}박 합계
               </span>
-              <span>{krw(total)}</span>
+              <span>{krw(room.price)}</span>
             </div>
             <div className="flex justify-between t-body-sm text-[var(--color-ink-3)]">
               <span>세금 및 봉사료</span>
@@ -163,7 +131,7 @@ export function Step4Review({ onPrev }: { onPrev?: () => void } = {}) {
           <div className="mt-6 h-px bg-[var(--color-line)]" />
           <div className="mt-6 flex items-baseline justify-between">
             <span className="t-h4">합계</span>
-            <span className="t-price">{krw(total)}</span>
+            <span className="t-price">{krw(room.price)}</span>
           </div>
         </section>
       </article>
@@ -202,7 +170,7 @@ export function Step4Review({ onPrev }: { onPrev?: () => void } = {}) {
           )}
           <button
             type="button"
-            onClick={onConfirm}
+            onClick={submit}
             disabled={!agree || submitting}
             className="btn btn-primary disabled:opacity-40 disabled:cursor-not-allowed"
           >
