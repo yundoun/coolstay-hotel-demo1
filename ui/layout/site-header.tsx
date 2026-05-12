@@ -9,6 +9,7 @@ import { siteHotel } from "@/hotel-data/hotel";
 
 const NAV_SECTIONS = [
   { id: "rooms", label: "객실" },
+  { id: "lookup", label: "예약 조회", href: "/reservation/lookup" },
   { id: "reservation", label: "예약하기", isButton: true },
 ];
 
@@ -73,8 +74,16 @@ export function SiteHeader() {
         </Link>
 
         <nav className="flex items-center gap-6 md:gap-10 text-[15px] font-medium">
-          {NAV_SECTIONS.map(({ id, label, isButton }) =>
-            isButton ? (
+          {NAV_SECTIONS.map(({ id, label, isButton, href }) =>
+            href ? (
+              <Link
+                key={id}
+                href={href}
+                className="nav-link"
+              >
+                {label}
+              </Link>
+            ) : isButton ? (
               <button
                 key={id}
                 type="button"

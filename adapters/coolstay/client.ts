@@ -18,6 +18,27 @@ export async function getToken() {
   return { accessToken: token.access_token as string, secret: token.secret as string };
 }
 
+/** 비회원 예약 조회 */
+export async function fetchGuestReservation(bookId: string, phoneNumber: string) {
+  const { accessToken, secret } = await getToken();
+
+  const qs = new URLSearchParams({ book_id: bookId, phone_number: phoneNumber });
+  const url = `${getApiBase()}/api/v2/mobile/reserv/guest/list?${qs}`;
+
+  const upstream = await fetch(url, {
+    headers: { "app-token": accessToken, "app-secret-code": secret },
+  });
+
+  const raw = await upstream.text();
+  const data = JSON.parse(raw.replace(/[\x00-\x1f]/g, " "));
+
+  if (data.code !== "20000000") {
+    throw new Error(data.desc || "예약 조회 실패");
+  }
+
+  return data.result;
+}
+
 /** details/list upstream 호출 공통 */
 export async function fetchStoreDetail(params: { checkIn?: string; checkOut?: string }) {
   if (!MOTEL_KEY) throw new Error("COOLSTAY_MOTEL_KEY 미설정");

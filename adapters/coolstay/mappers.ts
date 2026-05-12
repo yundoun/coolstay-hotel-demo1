@@ -49,6 +49,45 @@ export function toApiRoom(item: any): {
   };
 }
 
+/* ── 예약 상태 코드 → 도메인 상태 ── */
+const BOOK_STATUS_MAP: Record<string, import("@/domain/reservation/types").BookingStatus> = {
+  BS001: "BEFORE",   // 예약 확정 (이용 전)
+  BS002: "AFTER",    // 이용 완료
+  BS003: "CANCEL",   // 취소
+  BEFORE: "BEFORE",
+  AFTER: "AFTER",
+  CANCEL: "CANCEL",
+};
+
+/** upstream book → BookingItem (비회원 예약 조회 결과) */
+export function toBookingItem(book: any): import("@/domain/reservation/types").BookingItem {
+  const item = book.items?.[0];
+  const itemImage = book.item_images?.[0]?.url ?? book.item_images?.[0]?.thumb_url ?? null;
+  return {
+    bookId: book.book_id ?? book.bookId ?? "",
+    status: BOOK_STATUS_MAP[book.status] ?? "BEFORE",
+    storeName: book.motel?.name ?? "",
+    roomName: item?.name ?? "",
+    roomImage: book.repr_image ?? itemImage ?? null,
+    checkIn: String(book.start_dt ?? book.startDt ?? ""),
+    checkOut: String(book.end_dt ?? book.endDt ?? ""),
+    guestName: book.name ?? "",
+    guestPhone: book.phone_number ?? book.phoneNumber ?? "",
+    totalPrice: Number(book.total_price ?? book.totalPrice ?? 0),
+    originPrice: Number(book.origin_price_total ?? book.originPriceTotal ?? 0),
+    payment: {
+      method: book.payment?.method ?? "SITE",
+      status: book.payment?.status ?? "",
+      charge: Number(book.payment?.charge ?? 0),
+      cardNo: book.payment?.card_no ?? book.payment?.cardNo,
+      refundCharge: book.payment?.refund_charge != null ? Number(book.payment.refund_charge) : undefined,
+    },
+    refundYn: book.refund_yn === "Y" || book.refundYn === "Y",
+    vehicleYn: book.vehicle_yn === "Y" || book.vehicleYn === "Y",
+    regDate: String(book.reg_dt ?? book.regDt ?? ""),
+  };
+}
+
 /** upstream item → RoomType (홈페이지용, 기본 정보만) */
 export function toRoomType(item: any): {
   itemKey: string;
