@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import { cn } from "@/ui/lib/cn";
 import { siteHotel } from "@/hotel-data/hotel";
@@ -32,15 +32,36 @@ export function SiteHeader() {
   }, [isHome]);
 
   const onDark = isHome && !scrolled;
+  const router = useRouter();
 
-  const scrollTo = useCallback((id: string) => {
-    const targetId = id === "reservation" ? "step-indicator" : id;
+  const scrollToEl = useCallback((targetId: string) => {
     const el = document.getElementById(targetId);
     if (el) {
       const top = el.getBoundingClientRect().top + window.scrollY - 72;
       window.scrollTo({ top, behavior: "smooth" });
     }
   }, []);
+
+  const scrollTo = useCallback((id: string) => {
+    const targetId = id === "reservation" ? "step-indicator" : id;
+
+    if (!isHome) {
+      router.push("/");
+      // 홈 로드 후 스크롤 보정
+      const tryScroll = () => {
+        const el = document.getElementById(targetId);
+        if (el) {
+          scrollToEl(targetId);
+        } else {
+          requestAnimationFrame(tryScroll);
+        }
+      };
+      setTimeout(tryScroll, 100);
+      return;
+    }
+
+    scrollToEl(targetId);
+  }, [isHome, router, scrollToEl]);
 
   return (
     <header
