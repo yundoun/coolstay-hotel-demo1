@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useReservation } from "@/adapters/zustand/reservation-store";
+import { usePhoneVerification } from "@/application/hooks/usePhoneVerification";
 import { formatKoDate, krw, nightsBetween } from "@/domain/shared/utils";
 
 const schema = z.object({
@@ -14,8 +16,6 @@ const schema = z.object({
     .string()
     .min(9, "연락 가능한 번호를 입력해 주세요.")
     .regex(/^[0-9+\-\s]+$/u, "숫자와 하이픈만 입력해 주세요."),
-  email: z.string().email("올바른 이메일을 입력해 주세요."),
-  requests: z.string().max(500).optional(),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -31,6 +31,7 @@ export function Step3Guest({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors, isValid },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -38,85 +39,192 @@ export function Step3Guest({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
     defaultValues: {
       name: s.guestName,
       phone: s.guestPhone,
-      email: s.guestEmail,
-      requests: s.guestRequests,
     },
   });
 
+  const phoneValue = watch("phone");
+  const v = usePhoneVerification();
+  const [code, setCode] = useState("");
+  const codeInputRef = useRef<HTMLInputElement>(null);
+
+  // 번호 변경 시 인증 초기화
+  const prevPhoneRef = useRef(phoneValue);
+  useEffect(() => {
+    if (prevPhoneRef.current !== phoneValue && v.status !== "idle") {
+      v.resetVerification();
+      s.setPhoneVerified(false);
+      setCode("");
+    }
+    prevPhoneRef.current = phoneValue;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phoneValue]);
+
+  // 인증 완료 시 store 반영
+  useEffect(() => {
+    if (v.status === "verified") {
+      s.setPhoneVerified(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [v.status]);
+
+  const handleSend = () => {
+    v.send(phoneValue);
+    setCode("");
+    setTimeout(() => codeInputRef.current?.focus(), 100);
+  };
+
+  const handleVerify = () => {
+    v.verify(code);
+  };
+
+  const canSubmit = isValid && v.status === "verified";
+
   const onSubmit = handleSubmit((values) => {
+    if (!canSubmit) return;
     s.setGuestInfo(values);
     if (onNext) onNext();
     else router.push("/reservation?step=4");
   });
 
   return (
-    <div className="mx-auto max-w-[1040px]">
+    <div className="mx-auto max-w-[960px]">
       <span className="eyebrow">Step 03</span>
       <h2 className="t-h2 mt-4">투숙객 정보를 입력해 주세요.</h2>
       <p className="t-body mt-4 text-[var(--color-ink-3)]">
         입력하신 정보는 예약 확인 및 호텔 연락 목적으로만 사용됩니다.
       </p>
 
-      <form onSubmit={onSubmit} className="mt-14 grid grid-cols-1 gap-10 lg:grid-cols-[1fr_360px]">
-        <div className="flex flex-col gap-6">
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-            <Field label="이름" error={errors.name?.message} required>
-              <input {...register("name")} className="field" placeholder="홍길동" />
-            </Field>
-            <Field label="휴대폰" error={errors.phone?.message} required>
-              <input {...register("phone")} className="field" placeholder="010-1234-5678" inputMode="tel" />
-            </Field>
+      {/* Compact summary card */}
+      {storeName && roomName && (
+        <div className="mt-14 border border-[var(--color-line)] bg-white rounded-[2px] overflow-hidden">
+          <div className="flex flex-col sm:flex-row">
+            {s.apiRoom?.roomImage && (
+              <div className="relative aspect-[16/10] sm:aspect-auto sm:w-[240px] shrink-0 bg-[var(--color-line-soft)]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={s.apiRoom.roomImage}
+                  alt={roomName ?? ""}
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+              </div>
+            )}
+            <div className="flex-1 p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
+              <div className="flex flex-col gap-1">
+                <div className="t-h4">{storeName}</div>
+                <div className="t-body-sm text-[var(--color-ink-3)]">{roomName}</div>
+              </div>
+              <div className="flex flex-wrap gap-x-8 gap-y-2 t-caption text-[var(--color-ink-3)]">
+                <span>{formatKoDate(s.checkIn)} → {formatKoDate(s.checkOut)}</span>
+                <span>{nights}박 · 성인 {s.adults}인</span>
+              </div>
+              <div className="shrink-0 text-right">
+                <div className="t-caption text-[var(--color-ink-3)]">예상 합계</div>
+                <div className="t-price-sm mt-0.5">{krw(total)}</div>
+              </div>
+            </div>
           </div>
-          <Field label="이메일" error={errors.email?.message} required>
-            <input {...register("email")} className="field" placeholder="guest@coolstay.kr" inputMode="email" />
-          </Field>
-          <Field label="요청사항 (선택)" hint="예: 고층 객실 선호, 늦은 체크인 예정">
-            <textarea {...register("requests")} className="field" rows={5} />
+        </div>
+      )}
+
+      {/* Guest form */}
+      <form onSubmit={onSubmit} className="mt-10">
+        {/* 이름 */}
+        <div className="mb-6">
+          <Field label="이름" error={errors.name?.message} required>
+            <input {...register("name")} className="field" placeholder="홍길동" />
           </Field>
         </div>
 
-        {/* Summary rail */}
-        <aside className="border border-[var(--color-line)] bg-white rounded-[2px] h-fit overflow-hidden">
-          {storeName && roomName && (
-            <>
-              {s.apiRoom?.roomImage && (
-                <div className="relative aspect-[16/10] w-full bg-[var(--color-line-soft)]">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={s.apiRoom.roomImage}
-                    alt={roomName ?? ""}
-                    className="absolute inset-0 h-full w-full object-cover"
-                  />
-                </div>
+        {/* 휴대폰 + 인증 */}
+        <p className="mb-4 t-caption text-[var(--color-mute)]">
+          * 데모 환경입니다. 아무 번호나 입력 후 인증요청 → 아무 6자리 입력 → 확인을 눌러 주세요.
+        </p>
+        <div className="mb-2">
+          <Field label="휴대폰" error={errors.phone?.message} required>
+            <div className="flex gap-3">
+              <input
+                {...register("phone")}
+                className="field flex-1"
+                placeholder="010-1234-5678"
+                inputMode="tel"
+                readOnly={v.status === "verified"}
+              />
+              {v.status === "verified" ? (
+                <span className="inline-flex items-center gap-1.5 shrink-0 h-[48px] px-5 rounded-[2px] bg-[var(--color-bg-tint)] border border-[var(--color-line)] t-caption text-[var(--color-ink-3)]">
+                  <CheckIcon />
+                  인증완료
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSend}
+                  disabled={!phoneValue || phoneValue.replace(/[^0-9]/g, "").length < 10 || v.status === "sending"}
+                  className="shrink-0 h-[48px] px-5 rounded-[2px] border border-[var(--color-ink)] bg-[var(--color-ink)] text-white t-caption font-medium hover:bg-[var(--color-ink-2)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  {v.status === "sending"
+                    ? "전송 중…"
+                    : v.status === "sent" || v.status === "expired"
+                      ? "재전송"
+                      : "인증요청"}
+                </button>
               )}
-              <div className="p-6">
-                <span className="t-label-caps text-[var(--color-ink-3)]">예약 요약</span>
-                <div className="mt-4 flex flex-col gap-2">
-                  <div className="t-h4">{storeName}</div>
-                  <div className="t-body-sm text-[var(--color-ink-3)]">{roomName}</div>
-                </div>
-                <div className="my-5 h-px bg-[var(--color-line)]" />
-                <div className="flex flex-col gap-3">
-                  <Row label="체크인" value={formatKoDate(s.checkIn)} />
-                  <Row label="체크아웃" value={formatKoDate(s.checkOut)} />
-                  <Row label="기간" value={`${nights}박`} />
-                  <Row
-                    label="인원"
-                    value={`성인 ${s.adults}인${s.children > 0 ? ` · 아동 ${s.children}인` : ""}`}
-                  />
-                </div>
-                <div className="my-5 h-px bg-[var(--color-line)]" />
-                <div className="flex items-baseline justify-between">
-                  <span className="t-caption text-[var(--color-ink-3)]">예상 합계</span>
-                  <span className="t-price-sm">{krw(total)}</span>
-                </div>
+            </div>
+          </Field>
+        </div>
+
+        {/* 인증번호 입력 영역 */}
+        {(v.status === "sent" || v.status === "verifying" || v.status === "expired") && (
+          <div className="mb-6 ml-0">
+            <div className="flex gap-3 items-start">
+              <div className="flex-1 relative">
+                <input
+                  ref={codeInputRef}
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={6}
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.replace(/[^0-9]/g, ""))}
+                  placeholder="인증번호 6자리"
+                  className="field w-full pr-[72px] tracking-[0.2em] font-medium"
+                  disabled={v.status === "expired"}
+                />
+                {v.status === "sent" && v.formatRemaining && (
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 t-caption tabular-nums text-[var(--color-honey-700)] font-medium">
+                    {v.formatRemaining}
+                  </span>
+                )}
               </div>
-            </>
-          )}
-        </aside>
+              <button
+                type="button"
+                onClick={handleVerify}
+                disabled={code.length < 6 || v.status === "verifying" || v.status === "expired"}
+                className="shrink-0 h-[48px] px-5 rounded-[2px] border border-[var(--color-ink)] text-[var(--color-ink)] t-caption font-medium hover:bg-[var(--color-ink)] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                {v.status === "verifying" ? "확인 중…" : "확인"}
+              </button>
+            </div>
+            {v.status === "expired" && (
+              <p className="mt-2 t-caption text-[var(--color-ink)] border-l-2 border-[var(--color-ink)] pl-2">
+                인증 시간이 만료되었습니다. 재전송해 주세요.
+              </p>
+            )}
+            {v.error && (
+              <p className="mt-2 t-caption text-[var(--color-ink)] border-l-2 border-[var(--color-ink)] pl-2">
+                {v.error}
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* 인증 완료 확인 메시지 */}
+        {v.status === "verified" && (
+          <p className="mb-6 t-caption text-[var(--color-ink-3)]">
+            휴대폰 본인인증이 완료되었습니다.
+          </p>
+        )}
 
         {/* Nav */}
-        <div className="lg:col-span-2 mt-4 flex items-center justify-between border-t border-[var(--color-line)] pt-8">
+        <div className="mt-10 flex items-center justify-between border-t border-[var(--color-line)] pt-8">
           {onPrev ? (
             <button type="button" onClick={onPrev} className="btn btn-secondary">
               ← 이전
@@ -128,7 +236,7 @@ export function Step3Guest({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
           )}
           <button
             type="submit"
-            disabled={!isValid}
+            disabled={!canSubmit}
             className="btn btn-primary disabled:opacity-40 disabled:cursor-not-allowed"
           >
             다음 →
@@ -143,13 +251,11 @@ function Field({
   label,
   children,
   error,
-  hint,
   required,
 }: {
   label: string;
   children: React.ReactNode;
   error?: string;
-  hint?: string;
   required?: boolean;
 }) {
   return (
@@ -159,17 +265,19 @@ function Field({
         {required && <span className="text-[var(--color-ink)]"> *</span>}
       </span>
       {children}
-      {hint && !error && <span className="t-caption text-[var(--color-mute)]">{hint}</span>}
-      {error && <span className="t-caption text-[var(--color-ink)] border-l-2 border-[var(--color-ink)] pl-2 mt-1">{error}</span>}
+      {error && (
+        <span className="t-caption text-[var(--color-ink)] border-l-2 border-[var(--color-ink)] pl-2 mt-1">
+          {error}
+        </span>
+      )}
     </label>
   );
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+function CheckIcon() {
   return (
-    <div className="flex items-baseline justify-between gap-4">
-      <span className="t-caption text-[var(--color-ink-3)]">{label}</span>
-      <span className="t-body-sm text-right">{value}</span>
-    </div>
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+      <path d="M3 7.5L5.5 10L11 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }

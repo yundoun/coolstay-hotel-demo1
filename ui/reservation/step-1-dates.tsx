@@ -48,24 +48,14 @@ export function Step1Dates({ onNext }: { onNext?: () => void } = {}) {
 
           <fieldset className="flex flex-col gap-4">
             <legend className="t-label-caps text-[var(--color-ink-3)]">투숙 인원</legend>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <GuestStepper
-                label="성인"
-                hint="만 13세 이상"
-                value={s.adults}
-                min={1}
-                max={4}
-                onChange={(n) => s.setGuests(n, s.children)}
-              />
-              <GuestStepper
-                label="아동"
-                hint="만 13세 미만"
-                value={s.children}
-                min={0}
-                max={3}
-                onChange={(n) => s.setGuests(s.adults, n)}
-              />
-            </div>
+            <GuestStepper
+              label="성인"
+              hint="만 13세 이상"
+              value={s.adults}
+              min={1}
+              max={4}
+              onChange={(n) => s.setAdults(n)}
+            />
           </fieldset>
         </div>
 
@@ -77,7 +67,7 @@ export function Step1Dates({ onNext }: { onNext?: () => void } = {}) {
             <SummaryRow label="체크아웃" value={formatKoDate(s.checkOut)} />
             <div className="h-px bg-[var(--color-line)] my-2" />
             <SummaryRow label="박" value={nights > 0 ? `${nights}박` : "—"} />
-            <SummaryRow label="인원" value={`성인 ${s.adults}인${s.children > 0 ? ` · 아동 ${s.children}인` : ""}`} />
+            <SummaryRow label="인원" value={`성인 ${s.adults}인`} />
           </div>
         </aside>
       </div>

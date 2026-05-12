@@ -70,23 +70,14 @@ export function Step4Review({ onPrev }: { onPrev?: () => void } = {}) {
         {/* Guest */}
         <section className="p-8">
           <span className="t-label-caps text-[var(--color-ink-3)]">투숙객</span>
-          <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4">
+          <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-3">
             <SummaryCell label="이름" value={s.guestName} />
             <SummaryCell label="휴대폰" value={s.guestPhone} />
-            <SummaryCell label="이메일" value={s.guestEmail} />
             <SummaryCell
               label="인원"
-              value={`성인 ${s.adults}인${s.children > 0 ? ` · 아동 ${s.children}인` : ""}`}
+              value={`성인 ${s.adults}인`}
             />
           </div>
-          {s.guestRequests && (
-            <div className="mt-6">
-              <span className="t-label-caps text-[var(--color-ink-3)]">요청사항</span>
-              <p className="mt-2 t-body-sm text-[var(--color-ink)] whitespace-pre-wrap">
-                {s.guestRequests}
-              </p>
-            </div>
-          )}
         </section>
 
         <div className="h-px bg-[var(--color-line)]" />

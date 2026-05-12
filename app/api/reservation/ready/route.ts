@@ -51,6 +51,10 @@ export async function POST(request: Request) {
 
   const data = await upstream.json();
 
+  console.log("[reservation proxy] request body:", JSON.stringify(body, null, 2));
+  console.log("[reservation proxy] upstream status:", upstream.status);
+  console.log("[reservation proxy] upstream response:", JSON.stringify(data, null, 2));
+
   if (!upstream.ok || data.code !== "20000000") {
     return NextResponse.json(
       { message: data.desc || "예약 요청이 실패했습니다.", code: data.code },

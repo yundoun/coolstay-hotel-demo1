@@ -51,9 +51,6 @@ export function ReservationCompleteClient() {
               </span>
             </div>
             <p className="t-body mt-6 max-w-[52ch] text-[var(--color-ink-3)]">
-              예약 확인 메일이{" "}
-              <span className="text-[var(--color-ink)]">{s.guestEmail}</span>로 발송되었습니다.
-              <br/>
               호텔에서 체크인 전 상세 안내를 드릴 예정입니다.
             </p>
           </div>
@@ -62,7 +59,12 @@ export function ReservationCompleteClient() {
           <article className="mt-16 border border-[var(--color-line)] bg-white rounded-[2px]">
             <section className="flex flex-col gap-6 p-8 md:flex-row md:items-center">
               <div className="relative aspect-[16/10] w-full md:w-[280px] shrink-0 overflow-hidden rounded-[2px] bg-[var(--color-line-soft)]">
-                <Image src={siteHotel.heroImage} alt={siteHotel.name} fill sizes="280px" className="object-cover" />
+                {apiRoom.roomImage ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={apiRoom.roomImage} alt={apiRoom.roomName} className="absolute inset-0 h-full w-full object-cover" />
+                ) : (
+                  <Image src={siteHotel.heroImage} alt={siteHotel.name} fill sizes="280px" className="object-cover" />
+                )}
               </div>
               <div className="flex-1">
                 <span className="t-label-caps text-[var(--color-ink-3)]">
@@ -80,26 +82,17 @@ export function ReservationCompleteClient() {
                 <Row label="체크인" value={`${formatKoDate(s.checkIn)} · ${apiRoom.checkInTime}:00`} />
                 <Row label="체크아웃" value={`${formatKoDate(s.checkOut)} · ${apiRoom.checkOutTime}:00`} />
                 <Row label="기간" value={`${nights}박 ${nights + 1}일`} />
-                <Row label="인원" value={`성인 ${s.adults}${s.children > 0 ? ` · 아동 ${s.children}` : ""}`} />
+                <Row label="인원" value={`성인 ${s.adults}`} />
               </div>
             </section>
 
             <div className="h-px bg-[var(--color-line)]" />
 
             <section className="p-8">
-              <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                 <Row label="투숙객" value={s.guestName} />
                 <Row label="연락처" value={s.guestPhone} />
-                <Row label="이메일" value={s.guestEmail} />
               </div>
-              {s.guestRequests && (
-                <div className="mt-6">
-                  <span className="t-label-caps text-[var(--color-ink-3)]">요청사항</span>
-                  <p className="mt-2 t-body-sm text-[var(--color-ink)] whitespace-pre-wrap">
-                    {s.guestRequests}
-                  </p>
-                </div>
-              )}
             </section>
 
             <div className="h-px bg-[var(--color-line)]" />

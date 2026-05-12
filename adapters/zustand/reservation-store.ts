@@ -16,7 +16,6 @@ export type ReservationState = {
   checkIn: string;
   checkOut: string;
   adults: number;
-  children: number;
   // Step 2
   hotelId: string | null;
   roomId: string | null;
@@ -24,18 +23,18 @@ export type ReservationState = {
   // Step 3
   guestName: string;
   guestPhone: string;
-  guestEmail: string;
-  guestRequests: string;
+  phoneVerified: boolean;
   // Step 4 outcome
   reservationNumber: string | null;
   // Actions
   setDates: (checkIn: string, checkOut: string) => void;
-  setGuests: (adults: number, children: number) => void;
+  setAdults: (adults: number) => void;
   setHotel: (hotelId: string | null) => void;
   setRoom: (roomId: string | null) => void;
   setApiRoom: (room: ApiRoomSelection) => void;
   clearApiRoom: () => void;
-  setGuestInfo: (info: { name: string; phone: string; email: string; requests?: string }) => void;
+  setPhoneVerified: (v: boolean) => void;
+  setGuestInfo: (info: { name: string; phone: string }) => void;
   setReservationNumber: (n: string) => void;
   reset: () => void;
 };
@@ -49,18 +48,16 @@ const INITIAL_STATE = {
   checkIn: defaultCheckIn,
   checkOut: defaultCheckOut,
   adults: 2,
-  children: 0,
   hotelId: SITE_HOTEL_ID as string | null,
   roomId: null as string | null,
   apiRoom: null as ApiRoomSelection | null,
   guestName: "",
   guestPhone: "",
-  guestEmail: "",
-  guestRequests: "",
+  phoneVerified: false,
   reservationNumber: null as string | null,
 } as const satisfies Omit<ReservationState,
-  "setDates" | "setGuests" | "setHotel" | "setRoom" |
-  "setApiRoom" | "clearApiRoom" | "setGuestInfo" | "setReservationNumber" | "reset"
+  "setDates" | "setAdults" | "setHotel" | "setRoom" |
+  "setApiRoom" | "clearApiRoom" | "setPhoneVerified" | "setGuestInfo" | "setReservationNumber" | "reset"
 >;
 
 /* ── Store ── */
@@ -70,17 +67,16 @@ export const useReservation = create<ReservationState>()(
     (set) => ({
       ...INITIAL_STATE,
       setDates: (checkIn, checkOut) => set({ checkIn, checkOut }),
-      setGuests: (adults, children) => set({ adults, children }),
+      setAdults: (adults) => set({ adults }),
       setHotel: (hotelId) => set({ hotelId, roomId: null, apiRoom: null }),
       setRoom: (roomId) => set({ roomId }),
       setApiRoom: (room) => set({ apiRoom: room }),
       clearApiRoom: () => set({ apiRoom: null }),
+      setPhoneVerified: (v) => set({ phoneVerified: v }),
       setGuestInfo: (info) =>
         set({
           guestName: info.name,
           guestPhone: info.phone,
-          guestEmail: info.email,
-          guestRequests: info.requests ?? "",
         }),
       setReservationNumber: (n) => set({ reservationNumber: n }),
       reset: () => set({ ...INITIAL_STATE }),

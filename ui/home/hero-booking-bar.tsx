@@ -22,7 +22,6 @@ export function HeroBookingBar() {
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [adults, setAdults] = useState(2);
-  const [children, setChildren] = useState(0);
 
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [calendarMode, setCalendarMode] = useState<"checkIn" | "checkOut">("checkIn");
@@ -60,7 +59,6 @@ export function HeroBookingBar() {
     checkIn,
     checkOut,
     adults: String(adults),
-    children: String(children),
     hotelId: SITE_HOTEL_ID,
   }).toString();
 
@@ -136,7 +134,7 @@ export function HeroBookingBar() {
             >
               <span className="bar-label">투숙객</span>
               <span className="bar-value">
-                성인 {adults}명{children > 0 ? ` · 아동 ${children}명` : ""}
+                성인 {adults}명
               </span>
             </button>
 
@@ -144,9 +142,7 @@ export function HeroBookingBar() {
               {guestOpen && (
                 <GuestDropdown
                   adults={adults}
-                  children={children}
                   onAdultsChange={setAdults}
-                  onChildrenChange={setChildren}
                   onClose={() => setGuestOpen(false)}
                 />
               )}
@@ -173,15 +169,11 @@ export function HeroBookingBar() {
 
 function GuestDropdown({
   adults,
-  children,
   onAdultsChange,
-  onChildrenChange,
   onClose,
 }: {
   adults: number;
-  children: number;
   onAdultsChange: (n: number) => void;
-  onChildrenChange: (n: number) => void;
   onClose: () => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -212,15 +204,6 @@ function GuestDropdown({
         min={1}
         max={4}
         onChange={onAdultsChange}
-      />
-      <div className="my-4 h-[1px] bg-[var(--color-line-soft)]" />
-      <GuestRow
-        label="아동"
-        sub="만 2–12세"
-        value={children}
-        min={0}
-        max={3}
-        onChange={onChildrenChange}
       />
       <button
         type="button"
