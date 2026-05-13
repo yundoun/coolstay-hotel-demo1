@@ -9,6 +9,9 @@ export function parseExtras(item: any): Record<string, string> {
   return map;
 }
 
+/** 숙박 카테고리 코드 */
+const STAY_CATEGORY = "010102";
+
 /** upstream item → ApiRoom (예약용 객실, 날짜 기반 가격 포함) */
 export function toApiRoom(item: any): {
   itemKey: string;
@@ -21,8 +24,18 @@ export function toApiRoom(item: any): {
   checkInTime: string;
   checkOutTime: string;
 } | null {
-  const sub = item.sub_items?.[0];
+  // 숙박(010102) sub_item만 선택, 대실(010101) 제외
+  const sub = (item.sub_items ?? []).find(
+    (s: any) => s.category?.code === STAY_CATEGORY,
+  );
   if (!sub) return null;
+
+  // 판매 불가(품절) 체크 — daily_extras의 SALES_YN
+  const firstDay = sub.daily_extras?.[0];
+  if (firstDay) {
+    const salesYn = parseExtras(firstDay).SALES_YN;
+    if (salesYn === "N") return null;
+  }
 
   const extras = parseExtras(item);
 
@@ -96,9 +109,14 @@ export function toRoomType(item: any): {
   maxGuests: number;
   images: { url: string; thumbUrl: string }[];
   basePrice: number;
-} {
+} | null {
+  // 숙박 sub_item만 선택
+  const sub = (item.sub_items ?? []).find(
+    (s: any) => s.category?.code === STAY_CATEGORY,
+  );
+  if (!sub) return null;
+
   const ex = parseExtras(item);
-  const sub = item.sub_items?.[0];
   return {
     itemKey: item.key,
     name: item.name,
@@ -108,6 +126,6 @@ export function toRoomType(item: any): {
       url: img.url,
       thumbUrl: img.thumb_url,
     })),
-    basePrice: sub?.price ?? Number(item.price ?? 0),
+    basePrice: sub.price ?? Number(item.price ?? 0),
   };
 }

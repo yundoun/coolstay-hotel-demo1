@@ -7,7 +7,7 @@ import type { StoreInfo } from "@/adapters/coolstay/types";
 export async function GET() {
   try {
     const motel = await fetchStoreDetail({});
-    const rooms = (motel.items ?? []).map(toRoomType);
+    const rooms = (motel.items ?? []).map(toRoomType).filter(Boolean) as NonNullable<ReturnType<typeof toRoomType>>[];
 
     const storeImages = (motel.images ?? []).map((img: any) => ({
       url: img.url as string,

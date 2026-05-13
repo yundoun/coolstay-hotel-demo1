@@ -39,6 +39,31 @@ export async function fetchGuestReservation(bookId: string, phoneNumber: string)
   return data.result;
 }
 
+/** 예약 취소 */
+export async function cancelReservation(bookId: string) {
+  const { accessToken, secret } = await getToken();
+
+  const url = `${getApiBase()}/api/v2/mobile/reserv/delete`;
+  const upstream = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "app-token": accessToken,
+      "app-secret-code": secret,
+    },
+    body: JSON.stringify({ book_id: bookId }),
+  });
+
+  const raw = await upstream.text();
+  const data = JSON.parse(raw.replace(/[\x00-\x1f]/g, " "));
+
+  if (data.code !== "20000000") {
+    throw new Error(data.desc || "예약 취소 실패");
+  }
+
+  return data.result;
+}
+
 /** details/list upstream 호출 공통 */
 export async function fetchStoreDetail(params: { checkIn?: string; checkOut?: string }) {
   if (!MOTEL_KEY) throw new Error("COOLSTAY_MOTEL_KEY 미설정");

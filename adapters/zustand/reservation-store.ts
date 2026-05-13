@@ -41,8 +41,8 @@ export type ReservationState = {
 
 /* ── 초기값 (reset에서 재사용) ── */
 
-const defaultCheckIn = addDaysISO(todayISO(), 14);
-const defaultCheckOut = addDaysISO(defaultCheckIn, 2);
+const defaultCheckIn = todayISO();
+const defaultCheckOut = addDaysISO(defaultCheckIn, 1);
 
 const INITIAL_STATE = {
   checkIn: defaultCheckIn,

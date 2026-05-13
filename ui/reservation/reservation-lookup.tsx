@@ -2,9 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState, type FormEvent } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, ArrowLeft, AlertCircle } from "lucide-react";
+import { Search, ArrowLeft, AlertCircle, X, Loader2, CheckCircle2 } from "lucide-react";
 import { useReservationLookup } from "@/application/hooks/useReservationLookup";
 import { siteHotel } from "@/hotel-data/hotel";
 import { krw } from "@/domain/shared/utils";
@@ -81,7 +81,7 @@ function formatPhone(v: string): string {
 /* ── 메인 컴포넌트 ── */
 
 export function ReservationLookup() {
-  const { state, lookup, reset } = useReservationLookup();
+  const { state, cancelState, lookup, cancel, reset } = useReservationLookup();
   const [bookId, setBookId] = useState("");
   const [phone, setPhone] = useState("");
 
@@ -160,7 +160,7 @@ export function ReservationLookup() {
                         type="text"
                         value={bookId}
                         onChange={(e) => setBookId(e.target.value)}
-                        placeholder="CS-20260512-ABCD"
+                        placeholder="026051200016"
                         className="field w-full"
                         autoComplete="off"
                       />
@@ -275,7 +275,11 @@ export function ReservationLookup() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, ease, delay: i * 0.08 }}
                       >
-                        <BookingCard booking={book} />
+                        <BookingCard
+                          booking={book}
+                          cancelState={cancelState}
+                          onCancel={cancel}
+                        />
                       </motion.div>
                     ))}
                   </div>
@@ -298,13 +302,38 @@ export function ReservationLookup() {
 
 /* ── 예약 카드 ── */
 
-function BookingCard({ booking }: { booking: BookingItem }) {
+type CancelState =
+  | { phase: "idle" }
+  | { phase: "loading"; bookId: string }
+  | { phase: "completed"; bookId: string }
+  | { phase: "error"; bookId: string; message: string };
+
+function BookingCard({
+  booking,
+  cancelState,
+  onCancel,
+}: {
+  booking: BookingItem;
+  cancelState: CancelState;
+  onCancel: (bookId: string) => Promise<boolean>;
+}) {
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const statusInfo = STATUS_MAP[booking.status] ?? STATUS_MAP.BEFORE;
   const paymentLabel = PAYMENT_METHOD_MAP[booking.payment.method] ?? booking.payment.method;
   const checkInDate = formatBookingDate(booking.checkIn);
   const checkOutDate = formatBookingDate(booking.checkOut);
   const checkInTime = formatBookingTime(booking.checkIn);
   const checkOutTime = formatBookingTime(booking.checkOut);
+
+  const isCancelling = cancelState.phase === "loading" && cancelState.bookId === booking.bookId;
+  const isCancelled = cancelState.phase === "completed" && cancelState.bookId === booking.bookId;
+  const cancelError = cancelState.phase === "error" && cancelState.bookId === booking.bookId ? cancelState.message : null;
+  const canCancel = booking.status === "BEFORE";
+  const isCancel = booking.status === "CANCEL";
+
+  async function handleConfirmCancel() {
+    await onCancel(booking.bookId);
+  }
 
   return (
     <article className="border border-[var(--color-line)] bg-white rounded-[2px] overflow-hidden">
@@ -358,15 +387,232 @@ function BookingCard({ booking }: { booking: BookingItem }) {
 
       {/* Payment */}
       <section className="p-6 sm:p-8">
-        <div className="flex items-baseline justify-between">
+        {isCancel ? (
           <div>
-            <span className="t-caption text-[var(--color-ink-3)]">결제 금액</span>
-            <p className="t-caption text-[var(--color-mute)] mt-0.5">{paymentLabel}</p>
+            <div className="flex items-baseline justify-between">
+              <span className="t-caption text-[var(--color-mute)]">결제 금액</span>
+              <span className="t-price-sm text-[var(--color-mute)] line-through">{krw(booking.totalPrice)}</span>
+            </div>
+            <p className="t-caption text-[var(--color-mute)] mt-2">
+              예약이 취소되었습니다. 환불 규정에 따라 처리됩니다.
+            </p>
           </div>
-          <span className="t-price-sm">{krw(booking.totalPrice)}</span>
-        </div>
+        ) : (
+          <div className="flex items-baseline justify-between">
+            <div>
+              <span className="t-caption text-[var(--color-ink-3)]">결제 금액</span>
+              <p className="t-caption text-[var(--color-mute)] mt-0.5">{paymentLabel}</p>
+            </div>
+            <span className="t-price-sm">{krw(booking.totalPrice)}</span>
+          </div>
+        )}
       </section>
+
+      {/* Cancel button */}
+      {canCancel && (
+        <>
+          <div className="h-px bg-[var(--color-line)]" />
+          <section className="p-6 sm:p-8">
+            <button
+              type="button"
+              onClick={() => setConfirmOpen(true)}
+              className="flex items-center gap-2 t-body-sm text-red-500 hover:text-red-700 transition-colors cursor-pointer bg-transparent border-none font-medium"
+            >
+              <X size={15} strokeWidth={2} />
+              예약 취소
+            </button>
+          </section>
+        </>
+      )}
+
+      {/* Cancel modal */}
+      <CancelModal
+        open={confirmOpen}
+        booking={booking}
+        isCancelling={isCancelling}
+        isCancelled={isCancelled}
+        cancelError={cancelError}
+        onConfirm={handleConfirmCancel}
+        onClose={() => setConfirmOpen(false)}
+      />
     </article>
+  );
+}
+
+/* ── 취소 확인 모달 ── */
+
+function CancelModal({
+  open,
+  booking,
+  isCancelling,
+  isCancelled,
+  cancelError,
+  onConfirm,
+  onClose,
+}: {
+  open: boolean;
+  booking: BookingItem;
+  isCancelling: boolean;
+  isCancelled: boolean;
+  cancelError: string | null;
+  onConfirm: () => void;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    if (!open) return;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open]);
+
+  const paymentLabel = PAYMENT_METHOD_MAP[booking.payment.method] ?? booking.payment.method;
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/50" />
+
+          {/* Dialog */}
+          <motion.div
+            className="relative w-full max-w-[420px] bg-white rounded-[2px] shadow-2xl"
+            initial={{ opacity: 0, scale: 0.95, y: 8 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 8 }}
+            transition={{ duration: 0.25, ease }}
+          >
+            <AnimatePresence mode="wait">
+              {isCancelled ? (
+                /* ── 취소 완료 화면 ── */
+                <motion.div
+                  key="completed"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, ease }}
+                  className="p-8 text-center"
+                >
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-50 border border-green-200">
+                    <CheckCircle2 size={28} strokeWidth={1.5} className="text-green-600" />
+                  </div>
+                  <h3 className="t-h4 mt-5">취소가 완료되었습니다</h3>
+                  <p className="t-body-sm text-[var(--color-ink-3)] mt-2">
+                    {booking.roomName} 예약이 정상적으로 취소되었습니다.<br />
+                    환불 규정에 따라 처리됩니다.
+                  </p>
+
+                  <div className="mt-6 rounded-[2px] bg-[var(--color-bg-soft)] border border-[var(--color-line)] p-4 text-left">
+                    <div className="flex items-baseline justify-between">
+                      <span className="t-caption text-[var(--color-ink-3)]">예약번호</span>
+                      <span className="t-caption text-[var(--color-mute)]">{booking.bookId}</span>
+                    </div>
+                    <div className="flex items-baseline justify-between mt-2">
+                      <span className="t-caption text-[var(--color-ink-3)]">결제 금액</span>
+                      <span className="t-caption text-[var(--color-mute)] line-through">{krw(booking.totalPrice)}</span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="btn btn-primary w-full mt-6 py-3"
+                  >
+                    확인
+                  </button>
+                </motion.div>
+              ) : (
+                /* ── 취소 확인 화면 ── */
+                <motion.div
+                  key="confirm"
+                  initial={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                >
+                  {/* Header */}
+                  <div className="flex items-center justify-between p-6 pb-0">
+                    <h3 className="t-h4 text-[var(--color-ink)]">예약 취소</h3>
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      disabled={isCancelling}
+                      className="text-[var(--color-mute)] hover:text-[var(--color-ink)] transition-colors cursor-pointer bg-transparent border-none p-1"
+                      aria-label="닫기"
+                    >
+                      <X size={18} strokeWidth={1.5} />
+                    </button>
+                  </div>
+
+                  {/* Body */}
+                  <div className="p-6">
+                    {/* Booking summary */}
+                    <div className="rounded-[2px] bg-[var(--color-bg-soft)] border border-[var(--color-line)] p-4">
+                      <p className="t-body-sm font-medium text-[var(--color-ink)]">{booking.roomName}</p>
+                      <p className="t-caption text-[var(--color-mute)] mt-1">{booking.bookId}</p>
+                      <div className="mt-3 flex items-baseline justify-between">
+                        <span className="t-caption text-[var(--color-ink-3)]">{paymentLabel}</span>
+                        <span className="t-body-sm font-semibold">{krw(booking.totalPrice)}</span>
+                      </div>
+                    </div>
+
+                    {/* Warning */}
+                    <div className="mt-5 rounded-[2px] border border-red-200 bg-red-50 p-4">
+                      <p className="t-body-sm text-[var(--color-ink-2)]">
+                        예약을 취소하시겠습니까?
+                      </p>
+                      <p className="t-caption text-red-500 mt-1">
+                        취소 후에는 되돌릴 수 없습니다. 환불 규정에 따라 취소 수수료가 발생할 수 있습니다.
+                      </p>
+                    </div>
+
+                    {/* Error */}
+                    {cancelError && (
+                      <div className="mt-4 flex items-start gap-2">
+                        <AlertCircle size={15} strokeWidth={1.5} className="mt-px shrink-0 text-red-500" />
+                        <p className="t-caption text-red-600">{cancelError}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Footer */}
+                  <div className="flex gap-3 p-6 pt-0">
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      disabled={isCancelling}
+                      className="btn-tertiary flex-1 py-3"
+                    >
+                      돌아가기
+                    </button>
+                    <button
+                      type="button"
+                      onClick={onConfirm}
+                      disabled={isCancelling}
+                      className="btn btn-primary flex-1 py-3 bg-red-600 hover:bg-red-700 text-white border-none"
+                    >
+                      {isCancelling ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <Loader2 size={16} className="animate-spin" />
+                          취소 처리 중
+                        </span>
+                      ) : (
+                        "취소 확인"
+                      )}
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
