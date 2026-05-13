@@ -109,6 +109,8 @@ export function toRoomType(item: any): {
   maxGuests: number;
   images: { url: string; thumbUrl: string }[];
   basePrice: number;
+  checkInTime: string;
+  checkOutTime: string;
 } | null {
   // 숙박 sub_item만 선택
   const sub = (item.sub_items ?? []).find(
@@ -117,6 +119,16 @@ export function toRoomType(item: any): {
   if (!sub) return null;
 
   const ex = parseExtras(item);
+
+  // 숙박 체크인/체크아웃 시간 추출
+  let stime = "";
+  let etime = "";
+  for (const d of sub.daily_extras ?? []) {
+    const dex = parseExtras(d);
+    if (!stime) stime = dex.STIME ?? "";
+    etime = dex.ETIME ?? "";
+  }
+
   return {
     itemKey: item.key,
     name: item.name,
@@ -127,5 +139,7 @@ export function toRoomType(item: any): {
       thumbUrl: img.thumb_url,
     })),
     basePrice: sub.price ?? Number(item.price ?? 0),
+    checkInTime: stime,
+    checkOutTime: etime,
   };
 }

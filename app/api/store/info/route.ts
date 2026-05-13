@@ -29,6 +29,10 @@ export async function GET() {
       sitePayment: motel.site_payment_yn === "Y",
       images: storeImages,
       rooms,
+      benefitRoom: motel.benefit_room ?? "",
+      benefitExtra: motel.benefit_extra ?? "",
+      policyMsg: motel.policy_msg ?? "",
+      refundPolicy: motel.refund_policy ?? "",
     };
 
     return NextResponse.json(info);

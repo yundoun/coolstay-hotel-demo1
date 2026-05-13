@@ -26,6 +26,8 @@ export type RoomType = {
   maxGuests: number;
   images: { url: string; thumbUrl: string }[];
   basePrice: number;
+  checkInTime: string;
+  checkOutTime: string;
 };
 
 export type StoreInfo = {
@@ -42,4 +44,8 @@ export type StoreInfo = {
   sitePayment: boolean;
   images: { url: string; thumbUrl: string; description: string }[];
   rooms: RoomType[];
+  benefitRoom: string;
+  benefitExtra: string;
+  policyMsg: string;
+  refundPolicy: string;
 };
