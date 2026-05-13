@@ -13,14 +13,6 @@ function formatTime(raw: string): string {
   return `${h}:00`;
 }
 
-function splitFacilities(text: string): string[] {
-  if (!text.trim()) return [];
-  return text
-    .split(/[,\n]/)
-    .map((s) => s.trim())
-    .filter(Boolean);
-}
-
 /* ── Image Carousel ── */
 
 function RoomCarousel({
@@ -141,71 +133,6 @@ function RoomCarousel({
   );
 }
 
-/* ── Accordion Item ── */
-
-function InfoAccordion({
-  title,
-  children,
-  defaultOpen = false,
-}: {
-  title: string;
-  children: React.ReactNode;
-  defaultOpen?: boolean;
-}) {
-  const [open, setOpen] = useState(defaultOpen);
-  const contentRef = useRef<HTMLDivElement>(null);
-  const [height, setHeight] = useState<number | undefined>(
-    defaultOpen ? undefined : 0,
-  );
-
-  useEffect(() => {
-    if (!contentRef.current) return;
-    if (open) {
-      setHeight(contentRef.current.scrollHeight);
-      const timer = setTimeout(() => setHeight(undefined), 350);
-      return () => clearTimeout(timer);
-    } else {
-      setHeight(contentRef.current.scrollHeight);
-      requestAnimationFrame(() => setHeight(0));
-    }
-  }, [open]);
-
-  return (
-    <div className="border-b border-[var(--color-line-soft)]">
-      <button
-        onClick={() => setOpen(!open)}
-        className="flex w-full items-center justify-between py-5 text-left cursor-pointer group/acc"
-      >
-        <span className="t-body-sm font-medium text-[var(--color-ink)]">
-          {title}
-        </span>
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          className={cn(
-            "text-[var(--color-mute)] transition-transform duration-300 shrink-0 ml-4",
-            open && "rotate-180",
-          )}
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-        </svg>
-      </button>
-      <div
-        className="overflow-hidden transition-[height] duration-300 ease-[var(--ease-out)]"
-        style={{ height: height != null ? `${height}px` : "auto" }}
-      >
-        <div ref={contentRef} className="pb-6">
-          {children}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 /* ── Main Component ── */
 
 export function ApiRoomTabs() {
@@ -231,16 +158,6 @@ export function ApiRoomTabs() {
   const room = data.rooms[active];
   const checkIn = formatTime(room.checkInTime);
   const checkOut = formatTime(room.checkOutTime);
-
-  const roomFacilities = splitFacilities(data.benefitRoom);
-  const sharedFacilities = splitFacilities(data.benefitExtra);
-  const hasPolicy = data.policyMsg.trim().length > 0;
-  const hasRefund = data.refundPolicy.trim().length > 0;
-  const hasFacilitySection =
-    roomFacilities.length > 0 ||
-    sharedFacilities.length > 0 ||
-    hasPolicy ||
-    hasRefund;
 
   return (
     <div>
@@ -331,73 +248,6 @@ export function ApiRoomTabs() {
         </div>
       </div>
 
-      {/* ── Facility & Policy Section ── */}
-      {hasFacilitySection && (
-        <div className="mt-16 pt-12 border-t border-[var(--color-line)]">
-          <span className="eyebrow">Facilities & Info</span>
-          <h3 className="t-h3 mt-3 mb-8">이용 안내</h3>
-
-          {/* Facility pills */}
-          {(roomFacilities.length > 0 || sharedFacilities.length > 0) && (
-            <div className="grid gap-8 md:grid-cols-2 mb-8">
-              {roomFacilities.length > 0 && (
-                <div>
-                  <p className="t-caption text-[var(--color-ink-3)] mb-3">
-                    객실 내 시설
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {roomFacilities.map((f) => (
-                      <span
-                        key={f}
-                        className="inline-block rounded-full border border-[var(--color-line)] px-3.5 py-1.5 text-[13px] text-[var(--color-ink-2)] leading-tight"
-                      >
-                        {f}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {sharedFacilities.length > 0 && (
-                <div>
-                  <p className="t-caption text-[var(--color-ink-3)] mb-3">
-                    공용 시설
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {sharedFacilities.map((f) => (
-                      <span
-                        key={f}
-                        className="inline-block rounded-full border border-[var(--color-line)] px-3.5 py-1.5 text-[13px] text-[var(--color-ink-2)] leading-tight"
-                      >
-                        {f}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Policy accordions */}
-          {(hasPolicy || hasRefund) && (
-            <div className="border-t border-[var(--color-line-soft)]">
-              {hasPolicy && (
-                <InfoAccordion title="이용 규정" defaultOpen>
-                  <p className="t-body-sm text-[var(--color-ink-3)] whitespace-pre-line leading-relaxed">
-                    {data.policyMsg}
-                  </p>
-                </InfoAccordion>
-              )}
-              {hasRefund && (
-                <InfoAccordion title="취소 및 환불 규정">
-                  <p className="t-body-sm text-[var(--color-ink-3)] whitespace-pre-line leading-relaxed">
-                    {data.refundPolicy}
-                  </p>
-                </InfoAccordion>
-              )}
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }
