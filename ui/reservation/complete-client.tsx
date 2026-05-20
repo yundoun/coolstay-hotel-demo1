@@ -1,0 +1,130 @@
+"use client";
+
+import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Check } from "lucide-react";
+import { useReservation } from "@/adapters/zustand/reservation-store";
+import { siteHotel } from "@/hotel-data/hotel";
+import { formatKoDate, krw, nightsBetween } from "@/domain/shared/utils";
+
+export function ReservationCompleteClient() {
+  const s = useReservation();
+  const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    if (!s.reservationNumber || !s.apiRoom) {
+      router.replace("/reservation?step=1");
+    }
+  }, [mounted, s.reservationNumber, s.apiRoom, router]);
+
+  const nights = nightsBetween(s.checkIn, s.checkOut);
+  const apiRoom = s.apiRoom;
+
+  if (!mounted || !apiRoom || !s.reservationNumber) return null;
+
+  return (
+    <>
+      {/* Hero */}
+      <section className="relative h-[40svh] min-h-[320px] w-full overflow-hidden">
+        <Image src={siteHotel.heroImage} alt={siteHotel.name} fill priority sizes="100vw" className="object-cover" />
+        <div className="absolute inset-0 hero-veil" aria-hidden />
+      </section>
+
+      {/* Confirmation */}
+      <section className="py-[120px]">
+        <div className="container-page max-w-[880px]">
+          <div className="flex flex-col items-center text-center">
+            <Check strokeWidth={1.5} className="h-10 w-10 text-[var(--color-ink)]" />
+            <h1 className="t-h1 mt-8">예약이 완료되었습니다.</h1>
+            <div className="mt-5 t-caption text-[var(--color-ink-3)]">
+              예약번호 ·{" "}
+              <span className="font-[var(--font-serif-en)] text-[15px] tracking-[0.08em] text-[var(--color-ink)]">
+                {s.reservationNumber}
+              </span>
+            </div>
+            <p className="t-body mt-6 max-w-[52ch] text-[var(--color-ink-3)]">
+              호텔에서 체크인 전 상세 안내를 드릴 예정입니다.
+            </p>
+          </div>
+
+          {/* Summary card */}
+          <article className="mt-16 border border-[var(--color-line)] bg-white rounded-[2px]">
+            <section className="flex flex-col gap-6 p-8 md:flex-row md:items-center">
+              <div className="relative aspect-[16/10] w-full md:w-[280px] shrink-0 overflow-hidden rounded-[2px] bg-[var(--color-line-soft)]">
+                {apiRoom.roomImage ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={apiRoom.roomImage} alt={apiRoom.roomName} className="absolute inset-0 h-full w-full object-cover" />
+                ) : (
+                  <Image src={siteHotel.heroImage} alt={siteHotel.name} fill sizes="280px" className="object-cover" />
+                )}
+              </div>
+              <div className="flex-1">
+                <span className="t-label-caps text-[var(--color-ink-3)]">
+                  {siteHotel.city} · {siteHotel.grade}-Star Hotel
+                </span>
+                <h3 className="t-h3 mt-2">{siteHotel.name}</h3>
+                <div className="mt-4 t-h4">{apiRoom.roomName}</div>
+              </div>
+            </section>
+
+            <div className="h-px bg-[var(--color-line)]" />
+
+            <section className="p-8">
+              <div className="grid grid-cols-2 gap-5 md:grid-cols-4">
+                <Row label="체크인" value={`${formatKoDate(s.checkIn)} · ${apiRoom.checkInTime}:00`} />
+                <Row label="체크아웃" value={`${formatKoDate(s.checkOut)} · ${apiRoom.checkOutTime}:00`} />
+                <Row label="기간" value={`${nights}박 ${nights + 1}일`} />
+                <Row label="인원" value={`성인 ${s.adults}`} />
+              </div>
+            </section>
+
+            <div className="h-px bg-[var(--color-line)]" />
+
+            <section className="p-8">
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                <Row label="투숙객" value={s.guestName} />
+                <Row label="연락처" value={s.guestPhone} />
+              </div>
+            </section>
+
+            <div className="h-px bg-[var(--color-line)]" />
+
+            <section className="p-8">
+              <div className="flex items-baseline justify-between">
+                <span className="t-h4">결제 예정 합계</span>
+                <span className="t-price">{krw(apiRoom.price)}</span>
+              </div>
+              <div className="mt-3 t-caption text-[var(--color-ink-3)]">
+                현장결제 — 체크인 시 호텔 프론트에서 결제가 진행됩니다.
+              </div>
+            </section>
+          </article>
+
+          {/* Footer actions */}
+          <div className="mt-12 flex flex-col items-center gap-4 border-t border-[var(--color-line)] pt-8 md:flex-row md:justify-center md:gap-10">
+            <Link href="/" className="btn-tertiary">
+              홈으로 돌아가기
+            </Link>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <div className="t-caption text-[var(--color-ink-3)]">{label}</div>
+      <div className="t-body-sm text-[var(--color-ink)] mt-1">{value}</div>
+    </div>
+  );
+}

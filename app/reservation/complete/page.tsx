@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { ReservationCompleteClient } from "@/components/reservation/complete-client";
+import { ReservationCompleteClient } from "@/ui/reservation/complete-client";
 
 export const metadata = { title: "예약 완료 — 꿀스테이" };
 

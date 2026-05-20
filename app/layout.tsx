@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Noto_Serif_KR, Playfair_Display } from "next/font/google";
 import "./globals.css";
-import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
-import { ReservationResetGuard } from "@/components/reservation-reset-guard";
+import { SiteHeader } from "@/ui/layout/site-header";
+import { SiteFooter } from "@/ui/layout/site-footer";
+import { ReservationResetGuard } from "@/ui/layout/reservation-reset-guard";
 
 const notoSerifKR = Noto_Serif_KR({
   weight: ["400", "500", "700"],

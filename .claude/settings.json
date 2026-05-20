@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c '\nFILE=\"$CLAUDE_FILE_PATH\"\nif [ -z \"$FILE\" ]; then exit 0; fi\n\nERRORS=\"\"\n\n# H1: domain/은 adapters/, application/, ui/, app/, hotel-data/를 import할 수 없다\nif echo \"$FILE\" | grep -q \"domain/\"; then\n  if grep -qE \"from [\\x27\\\"]@/(adapters|application|ui|app|hotel-data)/\" \"$FILE\" 2>/dev/null; then\n    ERRORS=\"$ERRORS\\n[H1] domain/은 adapters/, application/, ui/, app/, hotel-data/를 import할 수 없습니다.\"\n  fi\nfi\n\n# H2: adapters/는 domain/과 hotel-data/만 import 가능\nif echo \"$FILE\" | grep -q \"adapters/\"; then\n  if grep -qE \"from [\\x27\\\"]@/(application|ui|app)/\" \"$FILE\" 2>/dev/null; then\n    ERRORS=\"$ERRORS\\n[H2] adapters/는 domain/, hotel-data/와 외부 라이브러리만 import할 수 있습니다.\"\n  fi\nfi\n\n# H5: ui/는 adapters/를 직접 import할 수 없다 (zustand store 예외)\nif echo \"$FILE\" | grep -q \"ui/\"; then\n  if grep -qE \"from [\\x27\\\"]@/adapters/\" \"$FILE\" 2>/dev/null; then\n    if ! grep -qE \"from [\\x27\\\"]@/adapters/zustand/\" \"$FILE\" 2>/dev/null; then\n      ERRORS=\"$ERRORS\\n[H5] ui/ 컴포넌트는 adapters/를 직접 import할 수 없습니다 (zustand 예외).\"\n    fi\n  fi\nfi\n\n# H6: hotel-data/는 domain/만 import 가능\nif echo \"$FILE\" | grep -q \"hotel-data/\"; then\n  if grep -qE \"from [\\x27\\\"]@/(adapters|application|ui|app)/\" \"$FILE\" 2>/dev/null; then\n    ERRORS=\"$ERRORS\\n[H6] hotel-data/는 domain/만 import할 수 있습니다.\"\n  fi\nfi\n\n# R1: ui/ 컴포넌트에 fetch 금지\nif echo \"$FILE\" | grep -q \"ui/\"; then\n  if grep -qE \"^[^/]*\\bfetch\\(\" \"$FILE\" 2>/dev/null; then\n    ERRORS=\"$ERRORS\\n[R1] ui/ 컴포넌트에 직접 fetch() 호출 금지 — application/hooks/ 커스텀 훅으로 추출하세요.\"\n  fi\nfi\n\n# R4: 타입 재정의 금지\nif echo \"$FILE\" | grep -q \"ui/\"; then\n  if grep -qE \"^type (ApiRoom|StoreData|RoomsResponse|StoreInfo|RoomType) =\" \"$FILE\" 2>/dev/null; then\n    ERRORS=\"$ERRORS\\n[R4] 타입 재정의 금지 — domain/ 또는 adapters/ 타입을 import type으로 사용하세요.\"\n  fi\nfi\n\n# S3: non-null assertion 금지 (store 접근에서)\nif echo \"$FILE\" | grep -qE \"(ui|application)/\"; then\n  if grep -qE \"s\\.(api|guest|hotel|room)\\w*!\" \"$FILE\" 2>/dev/null; then\n    ERRORS=\"$ERRORS\\n[S3] store 값에 non-null assertion(!) 금지 — guard 또는 early return으로 처리하세요.\"\n  fi\nfi\n\n# S1: flat api 필드 사용 금지 (레거시 패턴)\nif grep -qE \"\\b(apiMotelKey|apiStoreName|apiSitePayment|apiPackageKey|apiRoomName|apiRoomImage|apiMaxGuests|apiDailyPrices|apiCheckInTime|apiCheckOutTime)\\b\" \"$FILE\" 2>/dev/null; then\n  if ! echo \"$FILE\" | grep -q \"adapters/zustand/reservation-store\"; then\n    ERRORS=\"$ERRORS\\n[S1] 레거시 flat api 필드 사용 금지 — s.apiRoom 객체로 접근하세요.\"\n  fi\nfi\n\nif [ -n \"$ERRORS\" ]; then\n  echo \"=== 아키텍처 규칙 위반 ===\"\n  echo -e \"$ERRORS\"\n  echo \"\"\n  echo \"참고: ARCHITECTURE.md\"\n  exit 1\nfi\n'"
+          }
+        ]
+      }
+    ]
+  }
+}
