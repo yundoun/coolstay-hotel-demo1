@@ -19,32 +19,6 @@ export const siteContent: SiteContent = {
         "https://cdn.coolstay.co.kr/upload/etc/shark1230/2024/03/14/15/74393ea6ef564f4585db7fb62fccbd93.jpg",
       imagePosition: "right",
     },
-    {
-      type: "feature-grid",
-      title: "팰리스만의 특별함",
-      features: [
-        {
-          icon: "🛁",
-          title: "스파욕조 & 스타일러",
-          description: "전 객실 스파욕조와 스타일러를 갖추어 호텔급 편의를 제공합니다.",
-        },
-        {
-          icon: "🍳",
-          title: "무료 조식 제공",
-          description: "2층 카페테리아에서 매일 아침 7시~9시 30분 조식을 무료로 즐기세요.",
-        },
-        {
-          icon: "🅿️",
-          title: "무료 주차 25대",
-          description: "전 객실 주차 가능. 만차 시 도보 1분 거리 제1공영 주차장 비용 지원.",
-        },
-        {
-          icon: "👶",
-          title: "유아 무료 투숙",
-          description: "만 5세 미만 유아는 무료로 투숙 가능합니다.",
-        },
-      ],
-    },
   ],
   directions: {
     mapQuery: "경북 경주시 봉황로51번길 11",
