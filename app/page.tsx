@@ -1,10 +1,10 @@
-import Image from "next/image";
 import { siteHotel } from "@/hotel-data/hotel";
 import { siteContent } from "@/hotel-data/content";
 import { Reveal } from "@/ui/shared/reveal";
 import { AboutBlocks } from "@/ui/home/about-blocks";
 import { ApiRoomTabs } from "@/ui/home/api-room-tabs";
 import { OnepageReservation } from "@/ui/reservation/onepage-reservation";
+import { HeroCarousel } from "@/ui/home/hero-carousel";
 
 export default function HomePage() {
   const { greeting, about, directions } = siteContent;
@@ -14,14 +14,7 @@ export default function HomePage() {
       {/* ============== HERO ============== */}
       <section id="top" className="relative w-full">
         <div className="relative h-svh w-full overflow-hidden">
-          <Image
-            src={siteHotel.heroImage}
-            alt={siteHotel.name}
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover"
-          />
+          <HeroCarousel images={siteHotel.heroImages} alt={siteHotel.name} />
           <div className="absolute inset-0 hero-veil" aria-hidden />
 
           <div className="absolute inset-x-0 top-0 bottom-0 flex items-end">

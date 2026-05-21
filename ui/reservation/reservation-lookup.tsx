@@ -104,7 +104,7 @@ export function ReservationLookup() {
       {/* Hero — compact */}
       <section className="relative h-[35svh] min-h-[280px] w-full overflow-hidden">
         <Image
-          src={siteHotel.heroImage}
+          src={siteHotel.heroImages[0]}
           alt={siteHotel.name}
           fill
           priority

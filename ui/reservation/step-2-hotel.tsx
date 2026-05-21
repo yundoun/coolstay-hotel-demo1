@@ -197,7 +197,7 @@ export function Step2Hotel({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
                   <div className="flex items-center gap-4 min-w-0">
                     <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-[2px] bg-[var(--color-line-soft)]">
                       <Image
-                        src={siteHotel.heroImage}
+                        src={siteHotel.heroImages[0]}
                         alt={siteHotel.name}
                         fill
                         sizes="48px"

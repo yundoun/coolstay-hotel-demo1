@@ -4,7 +4,7 @@ export type Hotel = {
   nameEn: string;
   city: string;
   grade: 4 | 5;
-  heroImage: string;
+  heroImages: string[];
   galleryImages: string[];
   shortConcept: string;
   description: string;

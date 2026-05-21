@@ -12,7 +12,11 @@ export const siteHotel: Hotel = {
   nameEn: "Sowol Seoul",
   city: "서울",
   grade: 5,
-  heroImage: "/hotels/sowol-seoul/hero.jpg",
+  heroImages: [
+    "/hotels/sowol-seoul/hero.jpg",
+    "/hotels/sowol-seoul/hero-2.jpg",
+    "/hotels/sowol-seoul/hero-3.jpg",
+  ],
   galleryImages: [
     "/hotels/sowol-seoul/gallery-1.jpg",
     "/hotels/sowol-seoul/gallery-2.jpg",
