@@ -4,6 +4,8 @@ const nextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "plus.unsplash.com" },
+      { protocol: "https", hostname: "cdn.coolstay.co.kr" },
+      { protocol: "https", hostname: "storage.googleapis.com" },
     ],
   },
   webpack: (config) => {

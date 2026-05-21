@@ -1,6 +1,11 @@
 /** CoolStay upstream API 클라이언트 */
 
 const API_BASE = process.env.COOLSTAY_API_BASE;
+
+/** yyyy-MM-dd → yyyyMMdd (검수기 내부 서비스 호환) */
+function toCompactDate(iso: string): string {
+  return iso.replace(/-/g, "");
+}
 export const MOTEL_KEY = process.env.COOLSTAY_MOTEL_KEY ?? "";
 
 export function getApiBase() {
@@ -70,8 +75,8 @@ export async function fetchStoreDetail(params: { checkIn?: string; checkOut?: st
   const { accessToken, secret } = await getToken();
 
   const qs = new URLSearchParams({ motel_key: MOTEL_KEY, pure_click_yn: "N" });
-  if (params.checkIn) qs.set("search_start", params.checkIn);
-  if (params.checkOut) qs.set("search_end", params.checkOut);
+  if (params.checkIn) qs.set("search_start", toCompactDate(params.checkIn));
+  if (params.checkOut) qs.set("search_end", toCompactDate(params.checkOut));
 
   const url = `${getApiBase()}/api/v2/mobile/contents/details/list?${qs}`;
   const upstream = await fetch(url, {

@@ -21,9 +21,9 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "소월 서울 — 꿀스테이",
+  title: "경주 황리단길 팰리스 호텔 — 꿀스테이",
   description:
-    "남산 아래 도심 속 어반 생크추어리, 소월 서울. 온라인 객실 예약.",
+    "천년 고도 경주, 황리단길의 프리미엄 호텔. 온라인 객실 예약.",
 };
 
 export default function RootLayout({
