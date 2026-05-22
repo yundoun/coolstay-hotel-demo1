@@ -54,6 +54,7 @@ export function Step2Hotel({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
     });
   };
 
+  const hasRooms = Boolean(storeData && storeData.rooms.length > 0);
   const canNext = Boolean(selectedPkg && nights > 0);
 
   return (
@@ -80,8 +81,35 @@ export function Step2Hotel({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
         </div>
       )}
 
+      {/* Empty state */}
+      {!loading && !error && storeData && storeData.rooms.length === 0 && (
+        <div className="mt-10 flex flex-col items-center justify-center py-20 text-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--color-bg-tint)] text-[var(--color-ink-3)]">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 7v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7" />
+              <path d="M21 7L12 2 3 7" />
+              <line x1="12" y1="11" x2="12" y2="15" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+          </div>
+          <p className="t-h4 mt-5">선택하신 일정에 예약 가능한 객실이 없습니다</p>
+          <p className="t-body-sm mt-2 text-[var(--color-ink-3)]">
+            날짜를 변경하시면 더 많은 객실을 확인하실 수 있습니다.
+          </p>
+          {onPrev ? (
+            <button type="button" onClick={onPrev} className="btn btn-secondary mt-6">
+              ← 날짜 다시 선택
+            </button>
+          ) : (
+            <Link href="/reservation?step=1" className="btn btn-secondary mt-6">
+              ← 날짜 다시 선택
+            </Link>
+          )}
+        </div>
+      )}
+
       {/* Room list */}
-      {!loading && storeData && (
+      {!loading && storeData && storeData.rooms.length > 0 && (
         <section className="mt-10 border border-[var(--color-line)] bg-white rounded-[2px] overflow-hidden">
           <div className="divide-y divide-[var(--color-line)]">
             {storeData.rooms.map((r) => {
@@ -161,8 +189,8 @@ export function Step2Hotel({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
         </section>
       )}
 
-      {/* Nav */}
-      {onNext ? (
+      {/* Nav — 객실이 있을 때만 표시 */}
+      {hasRooms && onNext ? (
         <div className="mt-16 flex items-center justify-between border-t border-[var(--color-line)] pt-8">
           <button type="button" onClick={onPrev} className="btn btn-secondary">
             ← 이전
@@ -176,7 +204,7 @@ export function Step2Hotel({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
             다음 단계 →
           </button>
         </div>
-      ) : (
+      ) : hasRooms ? (
         <>
           <div className="mt-16 flex items-center border-t border-[var(--color-line)] pt-8">
             <Link href="/reservation?step=1" className="btn btn-secondary">
@@ -224,7 +252,7 @@ export function Step2Hotel({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
             )}
           </AnimatePresence>
         </>
-      )}
+      ) : null}
     </div>
   );
 }
