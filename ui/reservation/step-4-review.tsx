@@ -144,31 +144,7 @@ export function Step4Review({ onPrev }: { onPrev?: () => void } = {}) {
         {/* Refund policy */}
         {refundPolicies.length > 0 && (
           <>
-            <section className="p-5 md:p-8">
-              <span className="t-label-caps text-[var(--color-ink-3)]">취소·환불 규정</span>
-              <div className="mt-4 overflow-x-auto">
-                <table className="w-full text-left t-caption">
-                  <thead>
-                    <tr className="border-b border-[var(--color-line)]">
-                      <th className="pb-2 pr-4 font-medium text-[var(--color-ink-3)]">취소 기한</th>
-                      <th className="pb-2 pr-4 font-medium text-[var(--color-ink-3)] text-right">환불률</th>
-                      <th className="pb-2 font-medium text-[var(--color-ink-3)] text-right">환불 금액</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {refundPolicies.map((p, i) => (
-                      <tr key={i} className="border-b border-[var(--color-line-soft)]">
-                        <td className="py-2 pr-4 text-[var(--color-ink-2)]">
-                          {p.until.replace(/:\d{2}$/, "")} 까지
-                        </td>
-                        <td className="py-2 pr-4 text-right text-[var(--color-ink)]">{p.percent}%</td>
-                        <td className="py-2 text-right text-[var(--color-ink)]">{krw(p.amount)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </section>
+            <RefundPolicySection policies={refundPolicies} />
             <div className="h-px bg-[var(--color-line)]" />
           </>
         )}
@@ -299,6 +275,65 @@ export function Step4Review({ onPrev }: { onPrev?: () => void } = {}) {
         </div>
       </div>
     </div>
+  );
+}
+
+function RefundPolicySection({ policies }: { policies: { until: string; percent: number; amount: number }[] }) {
+  const [open, setOpen] = useState(false);
+
+  // 무료 취소(100%) 마감일 요약
+  const freeCancel = policies.find((p) => p.percent === 100);
+  const summary = freeCancel
+    ? `${freeCancel.until.replace(/:\d{2}$/, "")}까지 무료 취소 가능`
+    : `취소 시 수수료가 발생합니다`;
+
+  return (
+    <section className="p-5 md:p-8">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between gap-4 text-left"
+      >
+        <div className="flex flex-col gap-1">
+          <span className="t-label-caps text-[var(--color-ink-3)]">취소·환불 규정</span>
+          <span className="t-caption text-[var(--color-ink-2)]">{summary}</span>
+        </div>
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 16 16"
+          fill="none"
+          className={`shrink-0 text-[var(--color-ink-3)] transition-transform ${open ? "rotate-180" : ""}`}
+        >
+          <path d="M4 6L8 10L12 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+
+      {open && (
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full text-left t-caption">
+            <thead>
+              <tr className="border-b border-[var(--color-line)]">
+                <th className="pb-2 pr-4 font-medium text-[var(--color-ink-3)]">취소 기한</th>
+                <th className="pb-2 pr-4 font-medium text-[var(--color-ink-3)] text-right">환불률</th>
+                <th className="pb-2 font-medium text-[var(--color-ink-3)] text-right">환불 금액</th>
+              </tr>
+            </thead>
+            <tbody>
+              {policies.map((p, i) => (
+                <tr key={i} className="border-b border-[var(--color-line-soft)]">
+                  <td className="py-2 pr-4 text-[var(--color-ink-2)]">
+                    {p.until.replace(/:\d{2}$/, "")} 까지
+                  </td>
+                  <td className="py-2 pr-4 text-right text-[var(--color-ink)]">{p.percent}%</td>
+                  <td className="py-2 text-right text-[var(--color-ink)]">{krw(p.amount)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
   );
 }
 
