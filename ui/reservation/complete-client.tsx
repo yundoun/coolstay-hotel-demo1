@@ -39,7 +39,7 @@ export function ReservationCompleteClient() {
       </section>
 
       {/* Confirmation */}
-      <section className="py-[120px]">
+      <section className="py-16 md:py-[120px]">
         <div className="container-page max-w-[880px]">
           <div className="flex flex-col items-center text-center">
             <Check strokeWidth={1.5} className="h-10 w-10 text-[var(--color-ink)]" />
@@ -57,7 +57,7 @@ export function ReservationCompleteClient() {
 
           {/* Summary card */}
           <article className="mt-16 border border-[var(--color-line)] bg-white rounded-[2px]">
-            <section className="flex flex-col gap-6 p-8 md:flex-row md:items-center">
+            <section className="flex flex-col gap-5 p-5 md:gap-6 md:p-8 md:flex-row md:items-center">
               <div className="relative aspect-[16/10] w-full md:w-[280px] shrink-0 overflow-hidden rounded-[2px] bg-[var(--color-line-soft)]">
                 {apiRoom.roomImage ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -77,7 +77,7 @@ export function ReservationCompleteClient() {
 
             <div className="h-px bg-[var(--color-line)]" />
 
-            <section className="p-8">
+            <section className="p-5 md:p-8">
               <div className="grid grid-cols-2 gap-5 md:grid-cols-4">
                 <Row label="체크인" value={`${formatKoDate(s.checkIn)} · ${apiRoom.checkInTime}:00`} />
                 <Row label="체크아웃" value={`${formatKoDate(s.checkOut)} · ${apiRoom.checkOutTime}:00`} />
@@ -88,7 +88,7 @@ export function ReservationCompleteClient() {
 
             <div className="h-px bg-[var(--color-line)]" />
 
-            <section className="p-8">
+            <section className="p-5 md:p-8">
               <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                 <Row label="투숙객" value={s.guestName} />
                 <Row label="연락처" value={s.guestPhone} />
@@ -97,7 +97,7 @@ export function ReservationCompleteClient() {
 
             <div className="h-px bg-[var(--color-line)]" />
 
-            <section className="p-8">
+            <section className="p-5 md:p-8">
               <div className="flex items-baseline justify-between">
                 <span className="t-h4">결제 예정 합계</span>
                 <span className="t-price">{krw(apiRoom.price)}</span>

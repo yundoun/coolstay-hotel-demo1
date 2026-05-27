@@ -150,7 +150,7 @@ export function Step3Guest({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
                 readOnly={v.status === "verified"}
               />
               {v.status === "verified" ? (
-                <span className="inline-flex items-center gap-1.5 shrink-0 h-[48px] px-5 rounded-[2px] bg-[var(--color-bg-tint)] border border-[var(--color-line)] t-caption text-[var(--color-ink-3)]">
+                <span className="inline-flex items-center gap-1.5 shrink-0 h-[48px] md:h-[56px] px-4 md:px-5 rounded-[2px] bg-[var(--color-bg-tint)] border border-[var(--color-line)] t-caption text-[var(--color-ink-3)]">
                   <CheckIcon />
                   인증완료
                 </span>
@@ -159,7 +159,7 @@ export function Step3Guest({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
                   type="button"
                   onClick={handleSend}
                   disabled={!phoneValue || phoneValue.replace(/[^0-9]/g, "").length < 10 || v.status === "sending"}
-                  className="shrink-0 h-[48px] px-5 rounded-[2px] border border-[var(--color-ink)] bg-[var(--color-ink)] text-white t-caption font-medium hover:bg-[var(--color-ink-2)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="shrink-0 h-[48px] md:h-[56px] px-4 md:px-5 rounded-[2px] border border-[var(--color-ink)] bg-[var(--color-ink)] text-white t-caption font-medium hover:bg-[var(--color-ink-2)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   {v.status === "sending"
                     ? "전송 중…"
@@ -198,7 +198,7 @@ export function Step3Guest({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
                 type="button"
                 onClick={handleVerify}
                 disabled={code.length < 6 || v.status === "verifying" || v.status === "expired"}
-                className="shrink-0 h-[48px] px-5 rounded-[2px] border border-[var(--color-ink)] text-[var(--color-ink)] t-caption font-medium hover:bg-[var(--color-ink)] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="shrink-0 h-[48px] md:h-[56px] px-4 md:px-5 rounded-[2px] border border-[var(--color-ink)] text-[var(--color-ink)] t-caption font-medium hover:bg-[var(--color-ink)] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 {v.status === "verifying" ? "확인 중…" : "확인"}
               </button>

@@ -18,7 +18,7 @@ export default function HomePage() {
           <div className="absolute inset-0 hero-veil" aria-hidden />
 
           <div className="absolute inset-x-0 top-0 bottom-0 flex items-end">
-            <div className="container-page pb-[72px]">
+            <div className="container-page pb-10 md:pb-[72px]">
               <Reveal>
                 <span className="t-label-caps block text-white/80">
                   {siteHotel.city} · {siteHotel.grade}-Star Hotel
@@ -40,7 +40,7 @@ export default function HomePage() {
       </section>
 
       {/* ============== 사장님 인사말 ============== */}
-      <section id="greeting" className="py-[120px]">
+      <section id="greeting" className="py-16 md:py-[120px]">
         <div className="container-page max-w-[800px] text-center">
           <Reveal>
             <span className="eyebrow">Welcome</span>
@@ -69,9 +69,9 @@ export default function HomePage() {
       </div>
 
       {/* ============== 객실 안내 (간단 그리드) ============== */}
-      <section id="rooms" className="py-[120px]">
+      <section id="rooms" className="py-16 md:py-[120px]">
         <div className="container-page">
-          <div className="mb-[64px]">
+          <div className="mb-10 md:mb-[64px]">
             <Reveal>
               <span className="eyebrow">Rooms</span>
             </Reveal>
@@ -90,9 +90,9 @@ export default function HomePage() {
       </section>
 
       {/* ============== 예약 (임베디드) ============== */}
-      <section id="reservation" className="py-[120px]">
+      <section id="reservation" className="py-16 md:py-[120px]">
         <div className="container-page">
-          <div className="border-t border-[var(--color-line)] pt-[120px] text-center mb-[64px]">
+          <div className="border-t border-[var(--color-line)] pt-16 md:pt-[120px] text-center mb-10 md:mb-[64px]">
             <Reveal>
               <span className="eyebrow">Reservation</span>
             </Reveal>
@@ -110,9 +110,9 @@ export default function HomePage() {
       </section>
 
       {/* ============== 찾아오는 길 ============== */}
-      <section id="location" className="bg-[var(--color-bg-soft)] py-[120px]">
+      <section id="location" className="bg-[var(--color-bg-soft)] py-16 md:py-[120px]">
         <div className="container-page">
-          <div className="text-center mb-[64px]">
+          <div className="text-center mb-10 md:mb-[64px]">
             <Reveal>
               <span className="eyebrow">Location</span>
             </Reveal>
@@ -123,7 +123,7 @@ export default function HomePage() {
 
           {/* 구글 지도 */}
           <Reveal delay={0.1}>
-            <div className="relative aspect-[21/9] w-full overflow-hidden rounded-[2px]">
+            <div className="relative aspect-[4/3] md:aspect-[21/9] w-full overflow-hidden rounded-[2px]">
               <iframe
                 src={`https://maps.google.com/maps?q=${encodeURIComponent(directions.mapQuery)}&t=&z=16&ie=UTF8&iwloc=&output=embed`}
                 width="100%"
@@ -139,7 +139,7 @@ export default function HomePage() {
 
           {/* 안내 항목 — 라벨+값 그리드 */}
           <Reveal delay={0.15}>
-            <div className="mt-[48px] grid grid-cols-2 gap-x-8 gap-y-6 sm:grid-cols-3 md:grid-cols-5">
+            <div className="mt-8 md:mt-[48px] grid grid-cols-2 gap-x-5 gap-y-5 sm:grid-cols-3 sm:gap-x-8 sm:gap-y-6 md:grid-cols-5">
               {directions.items.map((item) => (
                 <div key={item.label}>
                   <span className="t-label-caps text-[var(--color-ink-3)]">{item.label}</span>

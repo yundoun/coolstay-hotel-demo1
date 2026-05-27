@@ -33,7 +33,7 @@ export function Step4Review({ onPrev }: { onPrev?: () => void } = {}) {
 
       <article className="mt-12 border border-[var(--color-line)] bg-white rounded-[2px]">
         {/* Hotel + Room */}
-        <section className="flex flex-col gap-6 p-8 md:flex-row md:items-center">
+        <section className="flex flex-col gap-5 p-5 md:gap-6 md:p-8 md:flex-row md:items-center">
           {room.roomImage && (
             <div className="relative aspect-[16/10] w-full md:w-[280px] shrink-0 overflow-hidden rounded-[2px] bg-[var(--color-line-soft)]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -56,7 +56,7 @@ export function Step4Review({ onPrev }: { onPrev?: () => void } = {}) {
         <div className="h-px bg-[var(--color-line)]" />
 
         {/* Schedule */}
-        <section className="p-8">
+        <section className="p-5 md:p-8">
           <span className="t-label-caps text-[var(--color-ink-3)]">투숙 일정</span>
           <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-3">
             <SummaryCell label="체크인" value={`${formatKoDate(s.checkIn)} · ${checkInTime}`} />
@@ -68,7 +68,7 @@ export function Step4Review({ onPrev }: { onPrev?: () => void } = {}) {
         <div className="h-px bg-[var(--color-line)]" />
 
         {/* Guest */}
-        <section className="p-8">
+        <section className="p-5 md:p-8">
           <span className="t-label-caps text-[var(--color-ink-3)]">투숙객</span>
           <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-3">
             <SummaryCell label="이름" value={s.guestName} />
@@ -83,7 +83,7 @@ export function Step4Review({ onPrev }: { onPrev?: () => void } = {}) {
         <div className="h-px bg-[var(--color-line)]" />
 
         {/* Payment method */}
-        <section className="p-8">
+        <section className="p-5 md:p-8">
           <span className="t-label-caps text-[var(--color-ink-3)]">결제수단</span>
           <div className="mt-4">
             <label className="flex items-center gap-3 border border-[var(--color-ink)] rounded-[2px] px-5 py-4 cursor-pointer bg-[var(--color-bg-tint)]">
@@ -105,7 +105,7 @@ export function Step4Review({ onPrev }: { onPrev?: () => void } = {}) {
         <div className="h-px bg-[var(--color-line)]" />
 
         {/* Payment summary */}
-        <section className="p-8">
+        <section className="p-5 md:p-8">
           <span className="t-label-caps text-[var(--color-ink-3)]">결제 요약</span>
           <div className="mt-4 flex flex-col gap-2">
             <div className="flex justify-between t-body-sm text-[var(--color-ink-2)]">

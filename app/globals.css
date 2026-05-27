@@ -150,21 +150,21 @@
   .t-price {
     font-family: var(--font-serif-ko);
     font-weight: 500;
-    font-size: 32px;
+    font-size: clamp(24px, 4vw, 32px);
     line-height: 1.2;
     letter-spacing: -0.01em;
   }
   .t-price-sm {
     font-family: var(--font-serif-ko);
     font-weight: 500;
-    font-size: 24px;
+    font-size: clamp(20px, 3vw, 24px);
     line-height: 1.2;
     letter-spacing: -0.01em;
   }
   .t-price-md {
     font-family: var(--font-serif-ko);
     font-weight: 500;
-    font-size: 28px;
+    font-size: clamp(22px, 3.5vw, 28px);
     line-height: 1.2;
     letter-spacing: -0.01em;
   }
@@ -225,18 +225,30 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    height: 56px;
-    padding-inline: 32px;
+    height: 48px;
+    padding-inline: 24px;
     border-radius: 2px;
     font-family: var(--font-sans);
     font-weight: 600;
-    font-size: 15px;
+    font-size: 14px;
     letter-spacing: 0.02em;
     transition: background-color 180ms var(--ease-out), color 180ms var(--ease-out), border-color 180ms var(--ease-out);
     cursor: pointer;
     user-select: none;
     white-space: nowrap;
     border: none;
+  }
+  @media (min-width: 768px) {
+    .btn {
+      height: 56px;
+      padding-inline: 32px;
+      font-size: 15px;
+    }
+  }
+  .btn-sm {
+    height: 40px;
+    padding-inline: 16px;
+    font-size: 13px;
   }
   .btn-primary {
     background: var(--color-honey-500);
@@ -273,8 +285,8 @@
   }
 
   .field {
-    height: 56px;
-    padding-inline: 16px;
+    height: 48px;
+    padding-inline: 14px;
     border: 1px solid var(--color-line);
     border-radius: 4px;
     background: #fff;
@@ -287,6 +299,12 @@
   .field:focus {
     border-color: var(--color-ink);
     outline: none;
+  }
+  @media (min-width: 768px) {
+    .field {
+      height: 56px;
+      padding-inline: 16px;
+    }
   }
   textarea.field {
     height: auto;

@@ -41,7 +41,7 @@ export function AboutBlocks({ blocks }: { blocks: AboutBlock[] }) {
 /* ── Text Block ── */
 function TextBlock({ block }: { block: AboutBlock }) {
   return (
-    <section className="py-[120px]">
+    <section className="py-16 md:py-[120px]">
       <div className="container-page max-w-[800px]">
         {block.eyebrow && (
           <Reveal>
@@ -69,7 +69,7 @@ function ImageTextBlock({ block, index }: { block: AboutBlock; index: number }) 
   const bgClass = index % 2 === 0 ? "" : "bg-[var(--color-bg-soft)]";
 
   return (
-    <section className={`py-[120px] ${bgClass}`}>
+    <section className={`py-16 md:py-[120px] ${bgClass}`}>
       <div className="container-page">
         <div
           className={`grid grid-cols-1 gap-10 md:gap-16 md:grid-cols-2 items-center ${
@@ -118,7 +118,7 @@ function ImageTextBlock({ block, index }: { block: AboutBlock; index: number }) 
 /* ── Feature Grid Block ── */
 function FeatureGridBlock({ block }: { block: AboutBlock }) {
   return (
-    <section className="bg-[var(--color-bg-soft)] py-[120px]">
+    <section className="bg-[var(--color-bg-soft)] py-16 md:py-[120px]">
       <div className="container-page">
         {block.eyebrow && (
           <Reveal>
@@ -130,7 +130,7 @@ function FeatureGridBlock({ block }: { block: AboutBlock }) {
         </Reveal>
 
         {block.features && (
-          <ul className="mt-[64px] grid grid-cols-1 gap-x-8 gap-y-12 sm:grid-cols-2 md:grid-cols-3">
+          <ul className="mt-10 md:mt-[64px] grid grid-cols-1 gap-x-8 gap-y-8 sm:grid-cols-2 sm:gap-y-12 md:grid-cols-3">
             {block.features.map((f, i) => {
               const Icon = FEATURE_ICONS[f.icon] ?? Sparkles;
               return (

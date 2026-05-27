@@ -133,7 +133,7 @@ export function Step2Hotel({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
                 <div
                   key={r.packageKey}
                   className={cn(
-                    "flex flex-col sm:flex-row gap-4 p-5 transition-colors",
+                    "flex flex-col sm:flex-row gap-3 sm:gap-4 p-4 sm:p-5 transition-colors",
                     isSelected && "bg-[var(--color-bg-tint)]",
                   )}
                 >
@@ -214,7 +214,7 @@ export function Step2Hotel({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
               {otherRooms.map((r) => (
                 <div
                   key={r.packageKey}
-                  className="flex flex-col sm:flex-row gap-4 p-5"
+                  className="flex flex-col sm:flex-row gap-3 sm:gap-4 p-4 sm:p-5"
                 >
                   <div className="relative aspect-[4/3] w-full sm:w-[160px] shrink-0 overflow-hidden rounded-[2px] bg-[var(--color-line-soft)]">
                     {r.image ? (

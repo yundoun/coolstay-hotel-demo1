@@ -36,7 +36,8 @@ export function StepIndicator({ current }: { current: 1 | 2 | 3 | 4 }) {
                           : "text-[var(--color-mute)]",
                     )}
                   >
-                    {String(s.n).padStart(2, "0")} · {s.label}
+                    <span className="sm:hidden">{isActive ? s.label : s.n}</span>
+                    <span className="hidden sm:inline">{String(s.n).padStart(2, "0")} · {s.label}</span>
                   </span>
                 </div>
                 {i < STEPS.length - 1 && (
