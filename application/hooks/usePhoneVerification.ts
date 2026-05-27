@@ -5,13 +5,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
 type Status = "idle" | "sending" | "sent" | "verifying" | "verified" | "expired";
 
 const TIMEOUT_SEC = 180; // 3분
-const MOCK_DELAY = 800; // 목업용 딜레이
 
 export function usePhoneVerification() {
   const [status, setStatus] = useState<Status>("idle");
   const [remaining, setRemaining] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const authKeyRef = useRef<string | null>(null);
 
   // 타이머 정리
   useEffect(() => {
@@ -48,31 +48,77 @@ export function usePhoneVerification() {
     setError(null);
     setStatus("sending");
 
-    // 목업: API 호출 시뮬레이션
-    await new Promise((r) => setTimeout(r, MOCK_DELAY));
+    try {
+      const res = await fetch("/api/sms/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone_number: phone }),
+      });
+      const data = await res.json();
 
-    setStatus("sent");
-    setRemaining(TIMEOUT_SEC);
+      if (!res.ok) {
+        setError(data.error || "인증번호 발송에 실패했습니다.");
+        setStatus("idle");
+        return;
+      }
+
+      authKeyRef.current = data.sms_auth_key;
+      setStatus("sent");
+      setRemaining(TIMEOUT_SEC);
+    } catch {
+      setError("네트워크 오류가 발생했습니다. 다시 시도해 주세요.");
+      setStatus("idle");
+    }
   }, []);
 
-  const verify = useCallback(async (code: string) => {
+  const verify = useCallback(async (code: string, phone?: string) => {
     if (!code || code.length < 6) {
       setError("인증번호 6자리를 입력해 주세요.");
+      return;
+    }
+    if (!authKeyRef.current) {
+      setError("인증번호를 먼저 요청해 주세요.");
       return;
     }
     setError(null);
     setStatus("verifying");
 
-    // 목업: 아무 6자리나 통과
-    await new Promise((r) => setTimeout(r, MOCK_DELAY));
+    try {
+      const res = await fetch("/api/sms/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sms_auth_key: authKeyRef.current,
+          sms_auth_code: code,
+          phone_number: phone ?? "",
+        }),
+      });
+      const data = await res.json();
+      console.log("[usePhoneVerification] verify response:", { status: res.status, data });
 
-    if (timerRef.current) clearInterval(timerRef.current);
-    setStatus("verified");
-    setRemaining(0);
+      if (!res.ok) {
+        setError(data.error || "인증번호 확인에 실패했습니다.");
+        setStatus("sent");
+        return;
+      }
+
+      if (data.is_verified) {
+        if (timerRef.current) clearInterval(timerRef.current);
+        setStatus("verified");
+        setRemaining(0);
+      } else {
+        setError("인증번호가 일치하지 않습니다. 다시 확인해 주세요.");
+        setStatus("sent");
+      }
+    } catch {
+      setError("네트워크 오류가 발생했습니다. 다시 시도해 주세요.");
+      setStatus("sent");
+    }
   }, []);
 
   const resetVerification = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
+    authKeyRef.current = null;
     setStatus("idle");
     setRemaining(0);
     setError(null);

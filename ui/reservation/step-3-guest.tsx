@@ -74,7 +74,7 @@ export function Step3Guest({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
   };
 
   const handleVerify = () => {
-    v.verify(code);
+    v.verify(code, phoneValue);
   };
 
   const canSubmit = isValid && v.status === "verified";
@@ -136,9 +136,6 @@ export function Step3Guest({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
         </div>
 
         {/* 휴대폰 + 인증 */}
-        <p className="mb-4 t-caption text-[var(--color-mute)]">
-          * 데모 환경입니다. 아무 번호나 입력 후 인증요청 → 아무 6자리 입력 → 확인을 눌러 주세요.
-        </p>
         <div className="mb-2">
           <Field label="휴대폰" error={errors.phone?.message} required>
             <div className="flex gap-3">
@@ -204,12 +201,12 @@ export function Step3Guest({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
               </button>
             </div>
             {v.status === "expired" && (
-              <p className="mt-2 t-caption text-[var(--color-ink)] border-l-2 border-[var(--color-ink)] pl-2">
+              <p className="mt-2 t-caption text-red-600 border-l-2 border-red-400 pl-2">
                 인증 시간이 만료되었습니다. 재전송해 주세요.
               </p>
             )}
             {v.error && (
-              <p className="mt-2 t-caption text-[var(--color-ink)] border-l-2 border-[var(--color-ink)] pl-2">
+              <p className="mt-2 t-caption text-red-600 border-l-2 border-red-400 pl-2">
                 {v.error}
               </p>
             )}

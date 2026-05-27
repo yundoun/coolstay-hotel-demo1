@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useReservation } from "@/adapters/zustand/reservation-store";
 import { useSubmitReservation } from "@/application/hooks/useSubmitReservation";
+import { useTerms } from "@/application/hooks/useTerms";
 import {
   formatKoDate,
   krw,
@@ -13,10 +14,46 @@ import {
 export function Step4Review({ onPrev }: { onPrev?: () => void } = {}) {
   const s = useReservation();
   const { submit, submitting, error } = useSubmitReservation();
-  const [agree, setAgree] = useState(false);
 
   const nights = nightsBetween(s.checkIn, s.checkOut);
   const room = s.apiRoom;
+
+  const { terms, refundPolicies, loading: termsLoading } = useTerms({
+    storeKey: room?.motelKey ?? null,
+    itemKey: s.roomId,
+    packKey: room?.packageKey ?? null,
+    checkIn: s.checkIn,
+    checkOut: s.checkOut,
+  });
+
+  // 동의 항목: 약관 + 취소환불규정
+  const agreementItems = useMemo(() => {
+    const items: { key: string; label: string; url?: string; required: boolean }[] = [];
+    for (const t of terms) {
+      items.push({ key: t.code, label: t.name, url: t.url, required: t.required });
+    }
+    if (refundPolicies.length > 0) {
+      items.push({ key: "REFUND_POLICY", label: "취소·환불 규정 동의", required: true });
+    }
+    return items;
+  }, [terms, refundPolicies]);
+
+  const [checked, setChecked] = useState<Record<string, boolean>>({});
+  const [modalTerm, setModalTerm] = useState<{ label: string; url: string } | null>(null);
+
+  const allChecked = agreementItems.length > 0 && agreementItems.every((item) => checked[item.key]);
+  const requiredAllChecked = agreementItems.filter((i) => i.required).every((i) => checked[i.key]);
+
+  const handleToggle = useCallback((key: string) => {
+    setChecked((prev) => ({ ...prev, [key]: !prev[key] }));
+  }, []);
+
+  const handleToggleAll = useCallback(() => {
+    const next = !allChecked;
+    setChecked(
+      Object.fromEntries(agreementItems.map((item) => [item.key, next])),
+    );
+  }, [allChecked, agreementItems]);
 
   if (!room) return null;
 
@@ -104,6 +141,38 @@ export function Step4Review({ onPrev }: { onPrev?: () => void } = {}) {
 
         <div className="h-px bg-[var(--color-line)]" />
 
+        {/* Refund policy */}
+        {refundPolicies.length > 0 && (
+          <>
+            <section className="p-5 md:p-8">
+              <span className="t-label-caps text-[var(--color-ink-3)]">취소·환불 규정</span>
+              <div className="mt-4 overflow-x-auto">
+                <table className="w-full text-left t-caption">
+                  <thead>
+                    <tr className="border-b border-[var(--color-line)]">
+                      <th className="pb-2 pr-4 font-medium text-[var(--color-ink-3)]">취소 기한</th>
+                      <th className="pb-2 pr-4 font-medium text-[var(--color-ink-3)] text-right">환불률</th>
+                      <th className="pb-2 font-medium text-[var(--color-ink-3)] text-right">환불 금액</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {refundPolicies.map((p, i) => (
+                      <tr key={i} className="border-b border-[var(--color-line-soft)]">
+                        <td className="py-2 pr-4 text-[var(--color-ink-2)]">
+                          {p.until.replace(/:\d{2}$/, "")} 까지
+                        </td>
+                        <td className="py-2 pr-4 text-right text-[var(--color-ink)]">{p.percent}%</td>
+                        <td className="py-2 text-right text-[var(--color-ink)]">{krw(p.amount)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+            <div className="h-px bg-[var(--color-line)]" />
+          </>
+        )}
+
         {/* Payment summary */}
         <section className="p-5 md:p-8">
           <span className="t-label-caps text-[var(--color-ink-3)]">결제 요약</span>
@@ -134,22 +203,82 @@ export function Step4Review({ onPrev }: { onPrev?: () => void } = {}) {
         </div>
       )}
 
-      {/* Consent + confirm */}
-      <div className="mt-10 flex flex-col gap-6">
-        <label className="flex items-start gap-3 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={agree}
-            onChange={(e) => setAgree(e.target.checked)}
-            className="mt-1 h-5 w-5 accent-[var(--color-honey-500)]"
-          />
-          <span className="t-body-sm text-[var(--color-ink-2)]">
-            예약 내용을 확인했으며, 이에 동의합니다. 실제 결제는 호텔에서 안내드리며,
-            본 데모는 결제가 진행되지 않습니다.
-          </span>
-        </label>
+      {/* Consent */}
+      <div className="mt-10 flex flex-col gap-4">
+        {termsLoading ? (
+          <p className="t-caption text-[var(--color-ink-3)]">약관 정보를 불러오는 중...</p>
+        ) : agreementItems.length > 0 ? (
+          <>
+            {/* 전체 동의 */}
+            <label className="flex items-center gap-3 cursor-pointer border-b border-[var(--color-line)] pb-4">
+              <input
+                type="checkbox"
+                checked={allChecked}
+                onChange={handleToggleAll}
+                className="h-5 w-5 accent-[var(--color-honey-500)]"
+              />
+              <span className="t-body-sm font-medium text-[var(--color-ink)]">
+                전체 동의
+              </span>
+            </label>
 
-        <div className="flex items-center justify-between border-t border-[var(--color-line)] pt-8">
+            {/* 개별 동의 */}
+            {agreementItems.map((item) => (
+              <label key={item.key} className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={checked[item.key] ?? false}
+                  onChange={() => handleToggle(item.key)}
+                  className="h-4 w-4 accent-[var(--color-honey-500)]"
+                />
+                <span className="flex-1 t-caption text-[var(--color-ink-2)]">
+                  {item.label}
+                  {item.required ? (
+                    <span className="text-[var(--color-ink)] ml-1">(필수)</span>
+                  ) : (
+                    <span className="text-[var(--color-ink-3)] ml-1">(선택)</span>
+                  )}
+                </span>
+                {item.url && (
+                  <button
+                    type="button"
+                    className="shrink-0 t-caption text-[var(--color-ink-3)] underline underline-offset-2 hover:text-[var(--color-ink)]"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setModalTerm({ label: item.label, url: item.url! });
+                    }}
+                  >
+                    보기
+                  </button>
+                )}
+              </label>
+            ))}
+          </>
+        ) : (
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={allChecked}
+              onChange={handleToggleAll}
+              className="mt-1 h-5 w-5 accent-[var(--color-honey-500)]"
+            />
+            <span className="t-body-sm text-[var(--color-ink-2)]">
+              예약 내용을 확인했으며, 이에 동의합니다.
+            </span>
+          </label>
+        )}
+
+        {/* 약관 모달 */}
+        {modalTerm && (
+          <TermsModal
+            title={modalTerm.label}
+            url={modalTerm.url}
+            onClose={() => setModalTerm(null)}
+          />
+        )}
+
+        <div className="flex items-center justify-between border-t border-[var(--color-line)] pt-8 mt-2">
           {onPrev ? (
             <button type="button" onClick={onPrev} className="btn btn-secondary">
               ← 이전
@@ -162,7 +291,7 @@ export function Step4Review({ onPrev }: { onPrev?: () => void } = {}) {
           <button
             type="button"
             onClick={submit}
-            disabled={!agree || submitting}
+            disabled={!requiredAllChecked || submitting}
             className="btn btn-primary disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {submitting ? "예약 확정 중…" : "예약 확정"}
@@ -178,6 +307,73 @@ function SummaryCell({ label, value }: { label: string; value: string }) {
     <div>
       <div className="t-caption text-[var(--color-ink-3)]">{label}</div>
       <div className="t-body-sm text-[var(--color-ink)] mt-1">{value}</div>
+    </div>
+  );
+}
+
+function TermsModal({ title, url, onClose }: { title: string; url: string; onClose: () => void }) {
+  // ESC 키로 닫기
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handler);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", handler);
+      document.body.style.overflow = "";
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      {/* backdrop */}
+      <div className="absolute inset-0 bg-black/40" />
+
+      {/* dialog */}
+      <div
+        className="relative w-full max-w-[640px] max-h-[80vh] bg-white rounded-[4px] shadow-xl flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--color-line)]">
+          <h3 className="t-h4">{title}</h3>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1 text-[var(--color-ink-3)] hover:text-[var(--color-ink)] transition-colors"
+            aria-label="닫기"
+          >
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          </button>
+        </div>
+
+        {/* body */}
+        <div className="flex-1 overflow-hidden">
+          <iframe
+            src={url}
+            title={title}
+            className="w-full h-full min-h-[50vh]"
+            sandbox="allow-same-origin"
+          />
+        </div>
+
+        {/* footer */}
+        <div className="px-6 py-4 border-t border-[var(--color-line)]">
+          <button
+            type="button"
+            onClick={onClose}
+            className="btn btn-primary w-full"
+          >
+            확인
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
