@@ -25,7 +25,7 @@ export default function HomePage() {
                 </span>
               </Reveal>
               <Reveal delay={0.08}>
-                <h1 className="t-display mt-4 max-w-[16ch] text-white">
+                <h1 className={`${siteHotel.heroTitleSize === "sm" ? "t-display-sm" : "t-display"} mt-4 text-white`}>
                   {siteHotel.name}
                 </h1>
               </Reveal>

@@ -138,6 +138,77 @@ function RoomCarousel({
 export function ApiRoomTabs() {
   const { data, loading } = useStoreInfo();
   const [active, setActive] = useState(0);
+  const tabBarRef = useRef<HTMLDivElement>(null);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+
+  const checkScroll = useCallback(() => {
+    const el = tabBarRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 4);
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+  }, []);
+
+  const scrollToTab = useCallback((idx: number) => {
+    const bar = tabBarRef.current;
+    if (!bar) return;
+    const btn = bar.children[idx] as HTMLElement | undefined;
+    if (!btn) return;
+    const left = btn.offsetLeft - bar.clientWidth / 2 + btn.offsetWidth / 2;
+    bar.scrollTo({ left, behavior: "smooth" });
+  }, []);
+
+  /* Mouse drag scroll for PC */
+  const isDragging = useRef(false);
+  const dragStartX = useRef(0);
+  const dragScrollLeft = useRef(0);
+  const hasDragged = useRef(false);
+
+  const onMouseDown = useCallback((e: React.MouseEvent) => {
+    const el = tabBarRef.current;
+    if (!el) return;
+    isDragging.current = true;
+    hasDragged.current = false;
+    dragStartX.current = e.clientX;
+    dragScrollLeft.current = el.scrollLeft;
+    el.style.cursor = "grabbing";
+    el.style.userSelect = "none";
+  }, []);
+
+  const onMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!isDragging.current) return;
+    const el = tabBarRef.current;
+    if (!el) return;
+    const dx = e.clientX - dragStartX.current;
+    if (Math.abs(dx) > 3) hasDragged.current = true;
+    el.scrollLeft = dragScrollLeft.current - dx;
+  }, []);
+
+  const onMouseUp = useCallback(() => {
+    isDragging.current = false;
+    const el = tabBarRef.current;
+    if (el) {
+      el.style.cursor = "";
+      el.style.userSelect = "";
+    }
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener("mouseup", onMouseUp);
+    return () => document.removeEventListener("mouseup", onMouseUp);
+  }, [onMouseUp]);
+
+  useEffect(() => {
+    checkScroll();
+    const el = tabBarRef.current;
+    if (!el) return;
+    el.addEventListener("scroll", checkScroll, { passive: true });
+    window.addEventListener("resize", checkScroll);
+    return () => {
+      el.removeEventListener("scroll", checkScroll);
+      window.removeEventListener("resize", checkScroll);
+    };
+  }, [checkScroll, data]);
 
   if (loading) {
     return (
@@ -161,22 +232,38 @@ export function ApiRoomTabs() {
 
   return (
     <div>
-      {/* Tab bar — preserved as-is */}
-      <div className="flex gap-1 overflow-x-auto border-b border-[var(--color-line)] scrollbar-hide">
-        {data.rooms.map((r, i) => (
-          <button
-            key={r.itemKey}
-            onClick={() => setActive(i)}
-            className={cn(
-              "shrink-0 px-5 py-3 text-[13px] tracking-[0.02em] transition-colors whitespace-nowrap cursor-pointer",
-              i === active
-                ? "border-b-2 border-[var(--color-ink)] text-[var(--color-ink)] font-medium"
-                : "text-[var(--color-ink-3)] hover:text-[var(--color-ink-2)]",
-            )}
-          >
-            {r.name}
-          </button>
-        ))}
+      {/* Tab bar with fade hints */}
+      <div className="relative">
+        {/* left fade */}
+        {canScrollLeft && (
+          <div className="pointer-events-none absolute left-0 top-0 bottom-0 z-10 w-12 bg-gradient-to-r from-[var(--color-bg)] to-transparent" />
+        )}
+        {/* right fade */}
+        {canScrollRight && (
+          <div className="pointer-events-none absolute right-0 top-0 bottom-0 z-10 w-12 bg-gradient-to-l from-[var(--color-bg)] to-transparent" />
+        )}
+        <div
+          ref={tabBarRef}
+          onMouseDown={onMouseDown}
+          onMouseMove={onMouseMove}
+          onMouseLeave={onMouseUp}
+          className="flex gap-1 overflow-x-auto border-b border-[var(--color-line)] no-scrollbar cursor-grab"
+        >
+          {data.rooms.map((r, i) => (
+            <button
+              key={r.itemKey}
+              onClick={() => { if (hasDragged.current) return; setActive(i); scrollToTab(i); }}
+              className={cn(
+                "shrink-0 px-5 py-3 text-[13px] tracking-[0.02em] transition-colors whitespace-nowrap cursor-pointer",
+                i === active
+                  ? "border-b-2 border-[var(--color-ink)] text-[var(--color-ink)] font-medium"
+                  : "text-[var(--color-ink-3)] hover:text-[var(--color-ink-2)]",
+              )}
+            >
+              {r.name}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Room Content */}

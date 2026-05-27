@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:stg": "cp .env.stg .env.local && next dev",
+    "dev:prd": "cp .env.prd .env.local && next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
