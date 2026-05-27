@@ -94,7 +94,6 @@ export function usePhoneVerification() {
         }),
       });
       const data = await res.json();
-      console.log("[usePhoneVerification] verify response:", { status: res.status, data });
 
       if (!res.ok) {
         setError(data.error || "인증번호 확인에 실패했습니다.");
