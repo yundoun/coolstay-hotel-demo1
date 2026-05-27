@@ -18,7 +18,7 @@ export function Step4Review({ onPrev }: { onPrev?: () => void } = {}) {
   const nights = nightsBetween(s.checkIn, s.checkOut);
   const room = s.apiRoom;
 
-  const { terms, refundPolicies, loading: termsLoading } = useTerms({
+  const { terms, refundPolicies, loading: termsLoading, error: termsError } = useTerms({
     storeKey: room?.motelKey ?? null,
     itemKey: s.roomId,
     packKey: room?.packageKey ?? null,
@@ -183,6 +183,8 @@ export function Step4Review({ onPrev }: { onPrev?: () => void } = {}) {
       <div className="mt-10 flex flex-col gap-4">
         {termsLoading ? (
           <p className="t-caption text-[var(--color-ink-3)]">약관 정보를 불러오는 중...</p>
+        ) : termsError ? (
+          <p className="t-caption text-red-600">{termsError}</p>
         ) : agreementItems.length > 0 ? (
           <>
             {/* 전체 동의 */}
@@ -254,24 +256,26 @@ export function Step4Review({ onPrev }: { onPrev?: () => void } = {}) {
           />
         )}
 
-        <div className="flex items-center justify-between border-t border-[var(--color-line)] pt-8 mt-2">
-          {onPrev ? (
-            <button type="button" onClick={onPrev} className="btn btn-secondary">
-              ← 이전
+        <div className="sticky bottom-0 z-30 -mx-4 mt-2 pointer-events-none px-4 py-4 sm:-mx-0 sm:px-0">
+          <div className="pointer-events-auto rounded-lg border border-[var(--color-line)] bg-white/90 backdrop-blur-sm px-4 py-4 flex items-center justify-between">
+            {onPrev ? (
+              <button type="button" onClick={onPrev} className="btn btn-secondary">
+                ← 이전
+              </button>
+            ) : (
+              <Link href="/reservation?step=3" className="btn btn-secondary">
+                ← 이전
+              </Link>
+            )}
+            <button
+              type="button"
+              onClick={submit}
+              disabled={!requiredAllChecked || submitting}
+              className="btn btn-primary disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {submitting ? "예약 확정 중…" : "예약 확정"}
             </button>
-          ) : (
-            <Link href="/reservation?step=3" className="btn btn-secondary">
-              ← 이전
-            </Link>
-          )}
-          <button
-            type="button"
-            onClick={submit}
-            disabled={!requiredAllChecked || submitting}
-            className="btn btn-primary disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            {submitting ? "예약 확정 중…" : "예약 확정"}
-          </button>
+          </div>
         </div>
       </div>
     </div>
