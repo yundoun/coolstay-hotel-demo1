@@ -174,12 +174,7 @@ export function Step2Hotel({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
                     {/* Price + select */}
                     <div className="flex sm:flex-col items-center sm:items-end justify-between gap-3 sm:min-w-[140px] shrink-0">
                       <div className="text-right">
-                        {r.dailyPrices.length > 1 && (
-                          <div className="t-caption text-[var(--color-ink-3)]">
-                            {r.dailyPrices.map((p, i) => `${i + 1}박 ${krw(p)}`).join(" / ")}
-                          </div>
-                        )}
-                        <div className="t-price-sm mt-0.5">{krw(r.price)}</div>
+                        <div className="t-price-sm">{krw(r.price)}</div>
                         <div className="t-caption text-[var(--color-ink-3)] mt-0.5">
                           {nights}박 합계
                         </div>
