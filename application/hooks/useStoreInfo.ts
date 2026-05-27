@@ -6,6 +6,7 @@ import type { StoreInfo } from "@/adapters/coolstay/types";
 export function useStoreInfo() {
   const [data, setData] = useState<StoreInfo | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const fetched = useRef(false);
 
   useEffect(() => {
@@ -18,9 +19,12 @@ export function useStoreInfo() {
         return res.json();
       })
       .then((d: StoreInfo) => setData(d))
-      .catch((err) => console.error("[useStoreInfo]", err))
+      .catch((err) => {
+        console.error("[useStoreInfo]", err);
+        setError(err.message);
+      })
       .finally(() => setLoading(false));
   }, []);
 
-  return { data, loading };
+  return { data, loading, error };
 }

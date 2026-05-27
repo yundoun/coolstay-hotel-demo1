@@ -135,8 +135,98 @@ function RoomCarousel({
 
 /* ── Main Component ── */
 
+/* ── Skeleton ── */
+
+function RoomTabsSkeleton() {
+  return (
+    <div className="animate-pulse">
+      {/* Tab bar skeleton */}
+      <div className="flex gap-1 border-b border-[var(--color-line)]">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="shrink-0 px-5 py-3">
+            <div className="h-[13px] w-16 rounded-[2px] bg-[var(--color-line-soft)]" />
+          </div>
+        ))}
+      </div>
+
+      {/* Content skeleton */}
+      <div className="mt-8 flex flex-col gap-6 md:flex-row md:gap-10">
+        {/* Image placeholder */}
+        <div className="aspect-[16/10] w-full md:w-[56%] shrink-0 rounded-[2px] bg-[var(--color-line-soft)]" />
+
+        {/* Info placeholder */}
+        <div className="flex flex-1 flex-col justify-between">
+          <div>
+            <div className="h-7 w-40 rounded-[2px] bg-[var(--color-line-soft)]" />
+            <div className="mt-4 space-y-2">
+              <div className="h-4 w-full rounded-[2px] bg-[var(--color-line-soft)]" />
+              <div className="h-4 w-3/4 rounded-[2px] bg-[var(--color-line-soft)]" />
+            </div>
+            <div className="mt-5 flex gap-4">
+              <div className="h-4 w-20 rounded-[2px] bg-[var(--color-line-soft)]" />
+              <div className="h-4 w-28 rounded-[2px] bg-[var(--color-line-soft)]" />
+            </div>
+            <div className="mt-6 pt-5 border-t border-[var(--color-line-soft)]">
+              <div className="h-3 w-12 rounded-[2px] bg-[var(--color-line-soft)]" />
+              <div className="mt-2 h-8 w-28 rounded-[2px] bg-[var(--color-line-soft)]" />
+            </div>
+          </div>
+          <div className="mt-6">
+            <div className="h-14 w-32 rounded-[2px] bg-[var(--color-line-soft)]" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Error State ── */
+
+function RoomTabsError({ message }: { message: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-20 text-center">
+      <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[var(--color-line)] bg-[var(--color-bg-soft)]">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-ink-3)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+      </div>
+      <p className="t-body-sm mt-4 font-medium text-[var(--color-ink-2)]">
+        객실 정보를 불러오지 못했습니다
+      </p>
+      <p className="t-caption mt-1.5 text-[var(--color-mute)]">
+        {message}
+      </p>
+    </div>
+  );
+}
+
+/* ── Empty State ── */
+
+function RoomTabsEmpty() {
+  return (
+    <div className="flex flex-col items-center justify-center py-20 text-center">
+      <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[var(--color-line)] bg-[var(--color-bg-soft)]">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-ink-3)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 7v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7" />
+          <path d="M21 7L12 2 3 7" />
+        </svg>
+      </div>
+      <p className="t-body-sm mt-4 font-medium text-[var(--color-ink-2)]">
+        등록된 객실이 없습니다
+      </p>
+      <p className="t-caption mt-1.5 text-[var(--color-mute)]">
+        객실 정보가 준비 중입니다.
+      </p>
+    </div>
+  );
+}
+
+/* ── Main Component ── */
+
 export function ApiRoomTabs() {
-  const { data, loading } = useStoreInfo();
+  const { data, loading, error } = useStoreInfo();
   const [active, setActive] = useState(0);
   const tabBarRef = useRef<HTMLDivElement>(null);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -211,19 +301,15 @@ export function ApiRoomTabs() {
   }, [checkScroll, data]);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20 text-[var(--color-ink-3)] t-body-sm">
-        객실 정보를 불러오는 중...
-      </div>
-    );
+    return <RoomTabsSkeleton />;
+  }
+
+  if (error) {
+    return <RoomTabsError message={error} />;
   }
 
   if (!data || data.rooms.length === 0) {
-    return (
-      <div className="flex items-center justify-center py-20 text-[var(--color-ink-3)] t-body-sm">
-        객실 정보를 불러올 수 없습니다.
-      </div>
-    );
+    return <RoomTabsEmpty />;
   }
 
   const room = data.rooms[active];
