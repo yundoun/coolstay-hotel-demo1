@@ -1,15 +1,13 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { SITE_HOTEL_ID, siteHotel } from "@/hotel-data/hotel";
+import { SITE_HOTEL_ID } from "@/hotel-data/hotel";
 import { useReservation } from "@/adapters/zustand/reservation-store";
 import type { ApiRoom } from "@/adapters/coolstay/types";
 import { useApiRooms } from "@/application/hooks/useApiRooms";
 import { cn } from "@/ui/lib/cn";
 import { krw, nightsBetween } from "@/domain/shared/utils";
-import { AnimatePresence, motion } from "framer-motion";
 
 export function Step2Hotel({ onNext, onPrev }: { onNext?: () => void; onPrev?: () => void } = {}) {
   const s = useReservation();
@@ -35,8 +33,6 @@ export function Step2Hotel({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
 
   const filteredRooms = storeData?.rooms.filter((r) => r.maxGuests >= s.adults) ?? [];
   const otherRooms = storeData?.rooms.filter((r) => r.maxGuests < s.adults) ?? [];
-  const selectedRoom = filteredRooms.find((r) => r.packageKey === selectedPkg) ?? null;
-
   const handleSelect = (room: ApiRoom) => {
     if (!storeData) return;
     setSelectedPkg(room.packageKey);
@@ -122,206 +118,176 @@ export function Step2Hotel({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
         </div>
       )}
 
-      {/* Room list */}
-      {!loading && hasRooms && (
-        <section className="mt-10 border border-[var(--color-line)] bg-white rounded-[2px] overflow-hidden">
-          <div className="divide-y divide-[var(--color-line)]">
-            {filteredRooms.map((r) => {
-              const isSelected = selectedPkg === r.packageKey;
+      {/* Scrollable room list container */}
+      {!loading && (hasRooms || otherRooms.length > 0) && (
+        <div className="mt-10 max-h-[min(600px,60vh)] overflow-y-auto rounded-[2px] border border-[var(--color-line)] bg-white scroll-smooth">
+          {/* Room list */}
+          {hasRooms && (
+            <div className="divide-y divide-[var(--color-line)]">
+              {filteredRooms.map((r) => {
+                const isSelected = selectedPkg === r.packageKey;
 
-              return (
-                <div
-                  key={r.packageKey}
-                  className={cn(
-                    "flex flex-col sm:flex-row gap-3 sm:gap-4 p-4 sm:p-5 transition-colors",
-                    isSelected && "bg-[var(--color-bg-tint)]",
-                  )}
-                >
-                  {/* Room image */}
-                  <div className="relative aspect-[4/3] w-full sm:w-[160px] shrink-0 overflow-hidden rounded-[2px] bg-[var(--color-line-soft)]">
-                    {r.image ? (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img
-                        src={r.image}
-                        alt={r.name}
-                        className="absolute inset-0 h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-full items-center justify-center t-caption text-[var(--color-ink-3)]">
-                        이미지 없음
-                      </div>
+                return (
+                  <div
+                    key={r.packageKey}
+                    className={cn(
+                      "flex flex-col sm:flex-row gap-3 sm:gap-4 p-4 sm:p-5 transition-colors",
+                      isSelected && "bg-[var(--color-bg-tint)]",
                     )}
-                  </div>
-
-                  {/* Room info */}
-                  <div className="flex flex-1 flex-col gap-2 min-w-0">
-                    <h3 className="t-h4">{r.name}</h3>
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-[var(--color-ink-2)]">
-                      <span>최대 {r.maxGuests}인</span>
-                      <Dot />
-                      <span>체크인 {r.checkInTime}:00</span>
-                      <Dot />
-                      <span>체크아웃 {r.checkOutTime}:00</span>
-                    </div>
-                    <div className="mt-1 flex flex-wrap gap-1.5">
-                      <span className="border border-[var(--color-line)] px-2 py-0.5 text-[11px] text-[var(--color-ink-3)]">
-                        현장결제
-                      </span>
-                      <span className="border border-[var(--color-line)] px-2 py-0.5 text-[11px] text-[var(--color-ink-3)]">
-                        숙박
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Price + select */}
-                  <div className="flex sm:flex-col items-center sm:items-end justify-between gap-3 sm:min-w-[140px] shrink-0">
-                    <div className="text-right">
-                      {r.dailyPrices.length > 1 && (
-                        <div className="t-caption text-[var(--color-ink-3)]">
-                          {r.dailyPrices.map((p, i) => `${i + 1}박 ${krw(p)}`).join(" / ")}
+                  >
+                    {/* Room image */}
+                    <div className="relative aspect-[4/3] w-full sm:w-[160px] shrink-0 overflow-hidden rounded-[2px] bg-[var(--color-line-soft)]">
+                      {r.image ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img
+                          src={r.image}
+                          alt={r.name}
+                          className="absolute inset-0 h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center t-caption text-[var(--color-ink-3)]">
+                          이미지 없음
                         </div>
                       )}
-                      <div className="t-price-sm mt-0.5">{krw(r.price)}</div>
-                      <div className="t-caption text-[var(--color-ink-3)] mt-0.5">
-                        {nights}박 합계
-                      </div>
                     </div>
-                    <button
-                      onClick={() => handleSelect(r)}
-                      className={cn(
-                        "btn btn-sm",
-                        isSelected ? "btn-primary" : "btn-secondary",
-                      )}
-                    >
-                      {isSelected ? "선택됨" : "선택"}
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      )}
 
-      {/* Other rooms — 인원 초과 객실 */}
-      {!loading && otherRooms.length > 0 && (
-        <div className="mt-10">
-          <p className="t-caption text-[var(--color-ink-3)] mb-4">
-            다른 객실 · 최대 인원 초과 ({otherRooms.length}개)
-          </p>
-          <section className="border border-[var(--color-line)] bg-white rounded-[2px] overflow-hidden opacity-60">
-            <div className="divide-y divide-[var(--color-line)]">
-              {otherRooms.map((r) => (
-                <div
-                  key={r.packageKey}
-                  className="flex flex-col sm:flex-row gap-3 sm:gap-4 p-4 sm:p-5"
-                >
-                  <div className="relative aspect-[4/3] w-full sm:w-[160px] shrink-0 overflow-hidden rounded-[2px] bg-[var(--color-line-soft)]">
-                    {r.image ? (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img
-                        src={r.image}
-                        alt={r.name}
-                        className="absolute inset-0 h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-full items-center justify-center t-caption text-[var(--color-ink-3)]">
-                        이미지 없음
+                    {/* Room info */}
+                    <div className="flex flex-1 flex-col gap-2 min-w-0">
+                      <h3 className="t-h4">{r.name}</h3>
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-[var(--color-ink-2)]">
+                        <span>최대 {r.maxGuests}인</span>
+                        <Dot />
+                        <span>체크인 {r.checkInTime}:00</span>
+                        <Dot />
+                        <span>체크아웃 {r.checkOutTime}:00</span>
                       </div>
-                    )}
-                  </div>
-                  <div className="flex flex-1 flex-col gap-2 min-w-0">
-                    <h3 className="t-h4">{r.name}</h3>
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-[var(--color-ink-2)]">
-                      <span>최대 {r.maxGuests}인</span>
-                      <Dot />
-                      <span>체크인 {r.checkInTime}:00</span>
-                      <Dot />
-                      <span>체크아웃 {r.checkOutTime}:00</span>
-                    </div>
-                    <span className="mt-1 inline-flex w-fit border border-red-200 bg-red-50 px-2 py-0.5 text-[11px] text-red-600">
-                      인원 초과
-                    </span>
-                  </div>
-                  <div className="flex sm:flex-col items-center sm:items-end justify-between gap-3 sm:min-w-[140px] shrink-0">
-                    <div className="text-right">
-                      <div className="t-price-sm mt-0.5">{krw(r.price)}</div>
-                      <div className="t-caption text-[var(--color-ink-3)] mt-0.5">
-                        {nights}박 합계
+                      <div className="mt-1 flex flex-wrap gap-1.5">
+                        <span className="border border-[var(--color-line)] px-2 py-0.5 text-[11px] text-[var(--color-ink-3)]">
+                          현장결제
+                        </span>
+                        <span className="border border-[var(--color-line)] px-2 py-0.5 text-[11px] text-[var(--color-ink-3)]">
+                          숙박
+                        </span>
                       </div>
                     </div>
+
+                    {/* Price + select */}
+                    <div className="flex sm:flex-col items-center sm:items-end justify-between gap-3 sm:min-w-[140px] shrink-0">
+                      <div className="text-right">
+                        {r.dailyPrices.length > 1 && (
+                          <div className="t-caption text-[var(--color-ink-3)]">
+                            {r.dailyPrices.map((p, i) => `${i + 1}박 ${krw(p)}`).join(" / ")}
+                          </div>
+                        )}
+                        <div className="t-price-sm mt-0.5">{krw(r.price)}</div>
+                        <div className="t-caption text-[var(--color-ink-3)] mt-0.5">
+                          {nights}박 합계
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleSelect(r)}
+                        className={cn(
+                          "btn btn-sm",
+                          isSelected ? "btn-primary" : "btn-secondary",
+                        )}
+                      >
+                        {isSelected ? "선택됨" : "선택"}
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
-          </section>
+          )}
+
+          {/* Other rooms — 인원 초과 객실 */}
+          {otherRooms.length > 0 && (
+            <div className={cn(hasRooms && "border-t border-[var(--color-line)]")}>
+              <div className="sticky top-0 z-10 bg-[var(--color-bg-tint)] px-5 py-3 border-b border-[var(--color-line)]">
+                <p className="t-caption text-[var(--color-ink-3)]">
+                  다른 객실 · 최대 인원 초과 ({otherRooms.length}개)
+                </p>
+              </div>
+              <div className="divide-y divide-[var(--color-line)] opacity-60">
+                {otherRooms.map((r) => (
+                  <div
+                    key={r.packageKey}
+                    className="flex flex-col sm:flex-row gap-3 sm:gap-4 p-4 sm:p-5"
+                  >
+                    <div className="relative aspect-[4/3] w-full sm:w-[160px] shrink-0 overflow-hidden rounded-[2px] bg-[var(--color-line-soft)]">
+                      {r.image ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img
+                          src={r.image}
+                          alt={r.name}
+                          className="absolute inset-0 h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center t-caption text-[var(--color-ink-3)]">
+                          이미지 없음
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex flex-1 flex-col gap-2 min-w-0">
+                      <h3 className="t-h4">{r.name}</h3>
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-[var(--color-ink-2)]">
+                        <span>최대 {r.maxGuests}인</span>
+                        <Dot />
+                        <span>체크인 {r.checkInTime}:00</span>
+                        <Dot />
+                        <span>체크아웃 {r.checkOutTime}:00</span>
+                      </div>
+                      <span className="mt-1 inline-flex w-fit border border-red-200 bg-red-50 px-2 py-0.5 text-[11px] text-red-600">
+                        인원 초과
+                      </span>
+                    </div>
+                    <div className="flex sm:flex-col items-center sm:items-end justify-between gap-3 sm:min-w-[140px] shrink-0">
+                      <div className="text-right">
+                        <div className="t-price-sm mt-0.5">{krw(r.price)}</div>
+                        <div className="t-caption text-[var(--color-ink-3)] mt-0.5">
+                          {nights}박 합계
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
       {/* Nav — 객실이 있을 때만 표시 */}
-      {(hasRooms || otherRooms.length > 0) && onNext ? (
-        <div className="mt-16 flex items-center justify-between border-t border-[var(--color-line)] pt-8">
-          <button type="button" onClick={onPrev} className="btn btn-secondary">
-            ← 이전
-          </button>
-          <button
-            type="button"
-            onClick={onNext}
-            disabled={!canNext}
-            className="btn btn-primary disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            다음 단계 →
-          </button>
-        </div>
-      ) : (hasRooms || otherRooms.length > 0) ? (
-        <>
-          <div className="mt-16 flex items-center border-t border-[var(--color-line)] pt-8">
+      {(hasRooms || otherRooms.length > 0) && (
+        <div className="mt-10 flex items-center justify-between border-t border-[var(--color-line)] pt-8">
+          {onPrev ? (
+            <button type="button" onClick={onPrev} className="btn btn-secondary">
+              ← 이전
+            </button>
+          ) : (
             <Link href="/reservation?step=1" className="btn btn-secondary">
               ← 이전
             </Link>
-          </div>
-
-          <AnimatePresence>
-            {canNext && selectedRoom && (
-              <motion.div
-                initial={{ y: "100%" }}
-                animate={{ y: 0 }}
-                exit={{ y: "100%" }}
-                transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-                className="fixed inset-x-0 bottom-0 z-50 border-t border-[var(--color-line)] bg-white/95 backdrop-blur-sm shadow-[0_-4px_24px_rgba(0,0,0,0.08)]"
-              >
-                <div className="mx-auto flex max-w-[1240px] items-center justify-between gap-4 px-[var(--page-gutter)] py-4">
-                  <div className="flex items-center gap-4 min-w-0">
-                    <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-[2px] bg-[var(--color-line-soft)]">
-                      <Image
-                        src={siteHotel.heroImages[0]}
-                        alt={siteHotel.name}
-                        fill
-                        sizes="48px"
-                        className="object-cover"
-                      />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="t-body-sm font-semibold truncate">
-                        {selectedRoom.name}
-                      </div>
-                      <div className="t-caption text-[var(--color-ink-3)] truncate">
-                        {nights}박 · {krw(selectedRoom.price)}
-                      </div>
-                    </div>
-                  </div>
-                  <Link
-                    href="/reservation?step=3"
-                    className="btn btn-primary shrink-0"
-                  >
-                    다음 단계 →
-                  </Link>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </>
-      ) : null}
+          )}
+          {onNext ? (
+            <button
+              type="button"
+              onClick={onNext}
+              disabled={!canNext}
+              className="btn btn-primary disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              다음 단계 →
+            </button>
+          ) : (
+            <Link
+              href={canNext ? "/reservation?step=3" : "#"}
+              className={cn("btn btn-primary", !canNext && "opacity-40 pointer-events-none")}
+            >
+              다음 단계 →
+            </Link>
+          )}
+        </div>
+      )}
     </div>
   );
 }
