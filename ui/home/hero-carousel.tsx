@@ -10,7 +10,7 @@ type Props = {
   intervalMs?: number;
 };
 
-export function HeroCarousel({ images, alt, intervalMs = 7000 }: Props) {
+export function HeroCarousel({ images, alt, intervalMs = 10000 }: Props) {
   const [current, setCurrent] = useState(0);
   const count = images.length;
   const shouldAnimate = count > 1;
@@ -51,14 +51,14 @@ export function HeroCarousel({ images, alt, intervalMs = 7000 }: Props) {
           <button
             onClick={prev}
             aria-label="이전 이미지"
-            className="absolute top-1/2 z-10 -translate-y-1/2 left-[max(var(--page-gutter),calc((100vw-var(--container-max))/2+var(--page-gutter)))] hidden md:flex h-10 w-10 items-center justify-center rounded-full bg-black/20 text-white opacity-40 backdrop-blur-sm transition-opacity duration-300 hover:opacity-100"
+            className="absolute top-1/2 z-10 -translate-y-1/2 left-[max(var(--page-gutter),calc((100vw-var(--container-max))/2+var(--page-gutter)))] hidden md:flex h-10 w-10 items-center justify-center rounded-full bg-black/20 text-white opacity-60 backdrop-blur-sm transition-opacity duration-300 hover:opacity-100"
           >
             <ChevronLeft size={22} strokeWidth={1.5} />
           </button>
           <button
             onClick={next}
             aria-label="다음 이미지"
-            className="absolute top-1/2 z-10 -translate-y-1/2 right-[max(var(--page-gutter),calc((100vw-var(--container-max))/2+var(--page-gutter)))] hidden md:flex h-10 w-10 items-center justify-center rounded-full bg-black/20 text-white opacity-40 backdrop-blur-sm transition-opacity duration-300 hover:opacity-100"
+            className="absolute top-1/2 z-10 -translate-y-1/2 right-[max(var(--page-gutter),calc((100vw-var(--container-max))/2+var(--page-gutter)))] hidden md:flex h-10 w-10 items-center justify-center rounded-full bg-black/20 text-white opacity-60 backdrop-blur-sm transition-opacity duration-300 hover:opacity-100"
           >
             <ChevronRight size={22} strokeWidth={1.5} />
           </button>
