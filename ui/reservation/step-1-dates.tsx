@@ -53,7 +53,7 @@ export function Step1Dates({ onNext }: { onNext?: () => void } = {}) {
               hint="만 13세 이상"
               value={s.adults}
               min={1}
-              max={4}
+              max={10}
               onChange={(n) => s.setAdults(n)}
             />
           </fieldset>

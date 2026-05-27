@@ -33,7 +33,9 @@ export function Step2Hotel({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
     }
   }, [storeData]);
 
-  const selectedRoom = storeData?.rooms.find((r) => r.packageKey === selectedPkg) ?? null;
+  const filteredRooms = storeData?.rooms.filter((r) => r.maxGuests >= s.adults) ?? [];
+  const otherRooms = storeData?.rooms.filter((r) => r.maxGuests < s.adults) ?? [];
+  const selectedRoom = filteredRooms.find((r) => r.packageKey === selectedPkg) ?? null;
 
   const handleSelect = (room: ApiRoom) => {
     if (!storeData) return;
@@ -54,7 +56,7 @@ export function Step2Hotel({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
     });
   };
 
-  const hasRooms = Boolean(storeData && storeData.rooms.length > 0);
+  const hasRooms = filteredRooms.length > 0;
   const canNext = Boolean(selectedPkg && nights > 0);
 
   return (
@@ -81,7 +83,7 @@ export function Step2Hotel({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
         </div>
       )}
 
-      {/* Empty state */}
+      {/* Empty state — 전체 객실이 없을 때만 */}
       {!loading && !error && storeData && storeData.rooms.length === 0 && (
         <div className="mt-10 flex flex-col items-center justify-center py-20 text-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--color-bg-tint)] text-[var(--color-ink-3)]">
@@ -108,11 +110,23 @@ export function Step2Hotel({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
         </div>
       )}
 
+      {/* 인원 기준 안내 — filteredRooms가 비었지만 otherRooms가 있을 때 */}
+      {!loading && !error && storeData && !hasRooms && otherRooms.length > 0 && (
+        <div className="mt-10 flex items-center gap-3 border border-[var(--color-honey-400)] bg-[var(--color-bg-tint)] rounded-[2px] px-5 py-4 t-body-sm text-[var(--color-ink-2)]">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-[var(--color-honey-700)]">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          성인 {s.adults}인 기준에 맞는 객실이 없습니다. 아래 다른 객실을 확인해 보세요.
+        </div>
+      )}
+
       {/* Room list */}
-      {!loading && storeData && storeData.rooms.length > 0 && (
+      {!loading && hasRooms && (
         <section className="mt-10 border border-[var(--color-line)] bg-white rounded-[2px] overflow-hidden">
           <div className="divide-y divide-[var(--color-line)]">
-            {storeData.rooms.map((r) => {
+            {filteredRooms.map((r) => {
               const isSelected = selectedPkg === r.packageKey;
 
               return (
@@ -189,8 +203,63 @@ export function Step2Hotel({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
         </section>
       )}
 
+      {/* Other rooms — 인원 초과 객실 */}
+      {!loading && otherRooms.length > 0 && (
+        <div className="mt-10">
+          <p className="t-caption text-[var(--color-ink-3)] mb-4">
+            다른 객실 · 최대 인원 초과 ({otherRooms.length}개)
+          </p>
+          <section className="border border-[var(--color-line)] bg-white rounded-[2px] overflow-hidden opacity-60">
+            <div className="divide-y divide-[var(--color-line)]">
+              {otherRooms.map((r) => (
+                <div
+                  key={r.packageKey}
+                  className="flex flex-col sm:flex-row gap-4 p-5"
+                >
+                  <div className="relative aspect-[4/3] w-full sm:w-[160px] shrink-0 overflow-hidden rounded-[2px] bg-[var(--color-line-soft)]">
+                    {r.image ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        src={r.image}
+                        alt={r.name}
+                        className="absolute inset-0 h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center t-caption text-[var(--color-ink-3)]">
+                        이미지 없음
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-1 flex-col gap-2 min-w-0">
+                    <h3 className="t-h4">{r.name}</h3>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-[var(--color-ink-2)]">
+                      <span>최대 {r.maxGuests}인</span>
+                      <Dot />
+                      <span>체크인 {r.checkInTime}:00</span>
+                      <Dot />
+                      <span>체크아웃 {r.checkOutTime}:00</span>
+                    </div>
+                    <span className="mt-1 inline-flex w-fit border border-red-200 bg-red-50 px-2 py-0.5 text-[11px] text-red-600">
+                      인원 초과
+                    </span>
+                  </div>
+                  <div className="flex sm:flex-col items-center sm:items-end justify-between gap-3 sm:min-w-[140px] shrink-0">
+                    <div className="text-right">
+                      <div className="t-price-sm mt-0.5">{krw(r.price)}</div>
+                      <div className="t-caption text-[var(--color-ink-3)] mt-0.5">
+                        {nights}박 합계
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+      )}
+
       {/* Nav — 객실이 있을 때만 표시 */}
-      {hasRooms && onNext ? (
+      {(hasRooms || otherRooms.length > 0) && onNext ? (
         <div className="mt-16 flex items-center justify-between border-t border-[var(--color-line)] pt-8">
           <button type="button" onClick={onPrev} className="btn btn-secondary">
             ← 이전
@@ -204,7 +273,7 @@ export function Step2Hotel({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
             다음 단계 →
           </button>
         </div>
-      ) : hasRooms ? (
+      ) : (hasRooms || otherRooms.length > 0) ? (
         <>
           <div className="mt-16 flex items-center border-t border-[var(--color-line)] pt-8">
             <Link href="/reservation?step=1" className="btn btn-secondary">
