@@ -7,7 +7,13 @@ const STEPS = [
   { n: 4, label: "확인" },
 ];
 
-export function StepIndicator({ current }: { current: 1 | 2 | 3 | 4 }) {
+export function StepIndicator({
+  current,
+  onStepClick,
+}: {
+  current: 1 | 2 | 3 | 4;
+  onStepClick?: (step: 1 | 2 | 3 | 4) => void;
+}) {
   return (
     <div id="step-indicator" className="sticky top-[72px] z-40 bg-white border-b border-[var(--color-line)]">
       <div className="container-page py-5">
@@ -15,9 +21,20 @@ export function StepIndicator({ current }: { current: 1 | 2 | 3 | 4 }) {
           {STEPS.map((s, i) => {
             const isDone = s.n < current;
             const isActive = s.n === current;
+            const canClick = isDone && !!onStepClick;
+
             return (
               <li key={s.n} className="flex flex-1 items-center gap-2">
-                <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  disabled={!canClick}
+                  onClick={() => canClick && onStepClick(s.n as 1 | 2 | 3 | 4)}
+                  className={cn(
+                    "flex items-center gap-3 transition-opacity",
+                    canClick && "cursor-pointer hover:opacity-70",
+                    !canClick && "cursor-default",
+                  )}
+                >
                   <span
                     className={cn(
                       "relative inline-flex h-3 w-3 shrink-0 rounded-full transition-colors",
@@ -39,7 +56,7 @@ export function StepIndicator({ current }: { current: 1 | 2 | 3 | 4 }) {
                     <span className="sm:hidden">{isActive ? s.label : s.n}</span>
                     <span className="hidden sm:inline">{String(s.n).padStart(2, "0")} · {s.label}</span>
                   </span>
-                </div>
+                </button>
                 {i < STEPS.length - 1 && (
                   <span className="h-px flex-1 bg-[var(--color-line)]" />
                 )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { useReservation } from "@/adapters/zustand/reservation-store";
 import { StepIndicator } from "@/ui/shared/step-indicator";
 import { Step1Dates } from "./step-1-dates";
 import { Step2Hotel } from "./step-2-hotel";
@@ -16,9 +17,9 @@ type Step = 1 | 2 | 3 | 4;
  */
 export function InlineReservation() {
   const [step, setStep] = useState<Step>(1);
+  const store = useReservation();
 
-  const goTo = useCallback((next: Step) => {
-    setStep(next);
+  const scrollToTop = useCallback(() => {
     setTimeout(() => {
       const anchor = document.getElementById("step-scroll-anchor");
       if (anchor) {
@@ -27,6 +28,28 @@ export function InlineReservation() {
       }
     }, 50);
   }, []);
+
+  const goTo = useCallback((next: Step) => {
+    setStep(next);
+    scrollToTop();
+  }, [scrollToTop]);
+
+  const goToWithReset = useCallback((target: Step) => {
+    if (target >= step) return;
+    // 이동하는 단계 이후의 데이터를 모두 초기화
+    if (target <= 1) {
+      store.setRoom(null);
+      store.clearApiRoom();
+      store.setGuestInfo({ name: "", phone: "" });
+      store.setPhoneVerified(false);
+    } else if (target <= 2) {
+      store.setGuestInfo({ name: "", phone: "" });
+      store.setPhoneVerified(false);
+    }
+    // target === 3: 4단계 동의 상태는 로컬 state라 자동 초기화
+    setStep(target);
+    scrollToTop();
+  }, [step, store, scrollToTop]);
 
   const content = (() => {
     switch (step) {
@@ -44,7 +67,7 @@ export function InlineReservation() {
   return (
     <div>
       <div id="step-scroll-anchor" aria-hidden />
-      <StepIndicator current={step} />
+      <StepIndicator current={step} onStepClick={goToWithReset} />
       <div className="container-page py-[64px]">
         <AnimatePresence mode="wait">
           <motion.div
