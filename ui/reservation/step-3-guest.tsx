@@ -221,23 +221,25 @@ export function Step3Guest({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
         )}
 
         {/* Nav */}
-        <div className="mt-10 flex items-center justify-between border-t border-[var(--color-line)] pt-8">
-          {onPrev ? (
-            <button type="button" onClick={onPrev} className="btn btn-secondary">
-              ← 이전
+        <div className="sticky bottom-0 z-30 -mx-4 mt-10 pointer-events-none px-4 py-4 sm:-mx-0 sm:px-0">
+          <div className="pointer-events-auto rounded-lg border border-[var(--color-line)] bg-white/90 backdrop-blur-sm px-4 py-4 flex items-center justify-between">
+            {onPrev ? (
+              <button type="button" onClick={onPrev} className="btn btn-secondary">
+                ← 이전
+              </button>
+            ) : (
+              <Link href="/reservation?step=2" className="btn btn-secondary">
+                ← 이전
+              </Link>
+            )}
+            <button
+              type="submit"
+              disabled={!canSubmit}
+              className="btn btn-primary disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              다음 →
             </button>
-          ) : (
-            <Link href="/reservation?step=2" className="btn btn-secondary">
-              ← 이전
-            </Link>
-          )}
-          <button
-            type="submit"
-            disabled={!canSubmit}
-            className="btn btn-primary disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            다음 →
-          </button>
+          </div>
         </div>
       </form>
     </div>

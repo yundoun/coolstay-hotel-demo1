@@ -73,31 +73,33 @@ export function Step1Dates({ onNext }: { onNext?: () => void } = {}) {
       </div>
 
       {/* Nav */}
-      <div className="mt-16 flex items-center justify-between border-t border-[var(--color-line)] pt-8">
-        <Link href="/" className="btn-tertiary">
-          ← 홈으로
-        </Link>
-        {onNext ? (
-          <button
-            type="button"
-            onClick={onNext}
-            disabled={!canNext}
-            className="btn btn-primary disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            객실 선택 →
-          </button>
-        ) : (
-          <Link
-            href="/reservation?step=2"
-            aria-disabled={!canNext}
-            onClick={(e) => {
-              if (!canNext) e.preventDefault();
-            }}
-            className={canNext ? "btn btn-primary" : "btn btn-primary opacity-40 pointer-events-none"}
-          >
-            객실 선택 →
+      <div className="sticky bottom-0 z-30 -mx-4 mt-16 pointer-events-none px-4 py-4 sm:-mx-0 sm:px-0">
+        <div className="pointer-events-auto rounded-lg border border-[var(--color-line)] bg-white/90 backdrop-blur-sm px-4 py-4 flex items-center justify-between">
+          <Link href="/" className="btn-tertiary">
+            ← 홈으로
           </Link>
-        )}
+          {onNext ? (
+            <button
+              type="button"
+              onClick={onNext}
+              disabled={!canNext}
+              className="btn btn-primary disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              객실 선택 →
+            </button>
+          ) : (
+            <Link
+              href="/reservation?step=2"
+              aria-disabled={!canNext}
+              onClick={(e) => {
+                if (!canNext) e.preventDefault();
+              }}
+              className={canNext ? "btn btn-primary" : "btn btn-primary opacity-40 pointer-events-none"}
+            >
+              객실 선택 →
+            </Link>
+          )}
+        </div>
       </div>
     </div>
   );

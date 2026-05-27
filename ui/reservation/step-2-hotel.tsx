@@ -120,7 +120,7 @@ export function Step2Hotel({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
 
       {/* Scrollable room list container */}
       {!loading && (hasRooms || otherRooms.length > 0) && (
-        <div className="mt-10 max-h-[min(600px,60vh)] overflow-y-auto rounded-[2px] border border-[var(--color-line)] bg-white scroll-smooth">
+        <div className="mt-10 rounded-[2px] border border-[var(--color-line)] bg-white">
           {/* Room list */}
           {hasRooms && (
             <div className="divide-y divide-[var(--color-line)]">
@@ -252,35 +252,37 @@ export function Step2Hotel({ onNext, onPrev }: { onNext?: () => void; onPrev?: (
         </div>
       )}
 
-      {/* Nav — 객실이 있을 때만 표시 */}
+      {/* Nav — 객실이 있을 때만 표시 (sticky: 예약 섹션 내에서만 하단 고정) */}
       {(hasRooms || otherRooms.length > 0) && (
-        <div className="mt-10 flex items-center justify-between border-t border-[var(--color-line)] pt-8">
-          {onPrev ? (
-            <button type="button" onClick={onPrev} className="btn btn-secondary">
-              ← 이전
-            </button>
-          ) : (
-            <Link href="/reservation?step=1" className="btn btn-secondary">
-              ← 이전
-            </Link>
-          )}
-          {onNext ? (
-            <button
-              type="button"
-              onClick={onNext}
-              disabled={!canNext}
-              className="btn btn-primary disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              다음 단계 →
-            </button>
-          ) : (
-            <Link
-              href={canNext ? "/reservation?step=3" : "#"}
-              className={cn("btn btn-primary", !canNext && "opacity-40 pointer-events-none")}
-            >
-              다음 단계 →
-            </Link>
-          )}
+        <div className="sticky bottom-0 z-30 -mx-4 mt-10 pointer-events-none px-4 py-4 sm:-mx-0 sm:px-0">
+          <div className="pointer-events-auto rounded-lg border border-[var(--color-line)] bg-white/90 backdrop-blur-sm px-4 py-4 flex items-center justify-between">
+            {onPrev ? (
+              <button type="button" onClick={onPrev} className="btn btn-secondary">
+                ← 이전
+              </button>
+            ) : (
+              <Link href="/reservation?step=1" className="btn btn-secondary">
+                ← 이전
+              </Link>
+            )}
+            {onNext ? (
+              <button
+                type="button"
+                onClick={onNext}
+                disabled={!canNext}
+                className="btn btn-primary disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                다음 단계 →
+              </button>
+            ) : (
+              <Link
+                href={canNext ? "/reservation?step=3" : "#"}
+                className={cn("btn btn-primary", !canNext && "opacity-40 pointer-events-none")}
+              >
+                다음 단계 →
+              </Link>
+            )}
+          </div>
         </div>
       )}
     </div>
