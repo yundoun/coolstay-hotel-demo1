@@ -22,8 +22,6 @@ export const siteContent: SiteContent = {
     items: [
       { label: "주소", value: "대구 중구 중앙대로81길 13" },
       { label: "연락처", value: "053-257-9898" },
-      { label: "체크인", value: "15:00" },
-      { label: "체크아웃", value: "11:00" },
       {
         label: "주차",
         value:

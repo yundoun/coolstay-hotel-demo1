@@ -14,7 +14,5 @@ export const siteHotel: Hotel = {
   ],
   shortConcept: "천년 고도 경주, 황리단길의 프리미엄 호텔",
   address: "경북 경주시 봉황로51번길 11",
-  checkInTime: "15:00",
-  checkOutTime: "11:00",
   phone: "010-2881-4995",
 };

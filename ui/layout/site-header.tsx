@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import { cn } from "@/ui/lib/cn";
@@ -75,21 +74,16 @@ export function SiteHeader() {
       <div className="container-page flex h-[72px] items-center justify-between">
         <Link
           href="/"
-          aria-label="꿀스테이 홈"
-          className="flex items-center gap-2"
+          aria-label={`${siteHotel.name} 홈`}
+          className="group flex items-center gap-0"
         >
-          <Image
-            src="/coolstay_logo.png"
-            alt="꿀스테이"
-            width={120}
-            height={28}
-            priority
+          <span
             className={cn(
-              "h-[28px] w-auto transition-opacity duration-[240ms]",
-              onDark ? "brightness-0 invert" : "",
+              "font-serif-ko text-[15px] font-semibold tracking-[-0.01em] leading-tight transition-colors duration-[240ms]",
+              "sm:text-[17px]",
             )}
-          />
-          <span className="t-label-caps text-current opacity-80 hidden sm:inline">
+            style={{ fontFamily: "var(--font-serif-ko)" }}
+          >
             {siteHotel.name}
           </span>
         </Link>

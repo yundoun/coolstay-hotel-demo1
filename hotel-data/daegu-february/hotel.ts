@@ -15,8 +15,6 @@ export const siteHotel: Hotel = {
   ],
   shortConcept: "동성로 중심, 루프탑 노천스파를 갖춘 프리미엄 시그니처 호텔",
   address: "대구 중구 중앙대로81길 13",
-  checkInTime: "15:00",
-  checkOutTime: "11:00",
   phone: "053-257-9898",
   heroTitleSize: "sm",
 };
