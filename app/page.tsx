@@ -97,7 +97,9 @@ export default function HomePage() {
               <span className="eyebrow">Reservation</span>
             </Reveal>
             <Reveal delay={0.05}>
-              <h2 className="t-h2 mt-6">온라인 예약</h2>
+              <h2 className="t-h2 mt-6">
+                온라인 예약<span className="text-[0.6em] font-bold">(Powered by 꿀스테이)</span>
+              </h2>
             </Reveal>
             <Reveal delay={0.1}>
               <p className="t-body mt-4 text-[var(--color-ink-3)]">
@@ -139,11 +141,11 @@ export default function HomePage() {
 
           {/* 안내 항목 — 라벨+값 그리드 */}
           <Reveal delay={0.15}>
-            <div className="mt-8 md:mt-[48px] grid grid-cols-2 gap-x-5 gap-y-5 sm:grid-cols-3 sm:gap-x-8 sm:gap-y-6 md:grid-cols-5">
+            <div className="mt-8 md:mt-[48px] flex flex-wrap gap-x-10 gap-y-6 md:gap-x-14">
               {directions.items.map((item) => (
-                <div key={item.label}>
+                <div key={item.label} className="min-w-[120px] max-w-[320px] shrink-0">
                   <span className="t-label-caps text-[var(--color-ink-3)]">{item.label}</span>
-                  <p className="t-body mt-1 text-[var(--color-ink)]">{item.value}</p>
+                  <p className="t-body mt-1 whitespace-pre-line text-[var(--color-ink)]">{item.value}</p>
                 </div>
               ))}
             </div>

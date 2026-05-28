@@ -25,7 +25,7 @@ export const siteContent: SiteContent = {
       {
         label: "주차",
         value:
-          "무료 주차 50대 (만차 시 인근 제휴 주차장 안내, 주차요금 지원)",
+          "무료 주차 50대\n(만차 시 인근 제휴 주차장 안내, 주차요금 지원)",
       },
       { label: "대구 동성로", value: "도보 3분" },
       { label: "대구역", value: "도보 10분" },
