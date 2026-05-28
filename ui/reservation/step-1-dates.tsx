@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useReservation } from "@/adapters/zustand/reservation-store";
-import { formatKoDate, nightsBetween, todayISO } from "@/domain/shared/utils";
+import { addDaysISO, formatKoDate, nightsBetween, todayISO } from "@/domain/shared/utils";
 
 export function Step1Dates({ onNext }: { onNext?: () => void } = {}) {
   const s = useReservation();
@@ -29,7 +29,11 @@ export function Step1Dates({ onNext }: { onNext?: () => void } = {}) {
                   type="date"
                   value={s.checkIn}
                   min={todayISO()}
-                  onChange={(e) => s.setDates(e.target.value, s.checkOut)}
+                  onChange={(e) => {
+                  const newCheckIn = e.target.value;
+                  const keepNights = Math.max(nightsBetween(s.checkIn, s.checkOut), 1);
+                  s.setDates(newCheckIn, addDaysISO(newCheckIn, keepNights));
+                }}
                   className="field"
                 />
               </label>
