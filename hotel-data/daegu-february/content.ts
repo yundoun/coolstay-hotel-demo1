@@ -13,7 +13,7 @@ export const siteContent: SiteContent = {
       title: "동성로 중심,\n대구의 시그니처 호텔.",
       body: "대구 도심 동성로에 위치한 2월호텔 더 시그니처는 약전 루프탑 노천스파, 40여 가지 조식뷔페, 해피아워 라운지를 갖춘 프리미엄 호텔입니다. 디럭스부터 가든 카라반 스위트까지 다양한 객실에서 특별한 하루를 경험하세요.",
       image:
-        "https://storage.googleapis.com/coolstay-prd/v2/owner/jmyong77/2026/01/29/19/d99116baf309418b816435e69d7249c4.jpg",
+        "https://storage.googleapis.com/coolstay-prd/v2/owner/jmyong77/2026/01/29/19/909f9a90bbeb49859b254ea119698389.jpg",
       imagePosition: "right",
     },
   ],
