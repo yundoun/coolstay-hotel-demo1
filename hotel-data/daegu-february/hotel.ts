@@ -4,7 +4,7 @@ export const SITE_HOTEL_ID = "daegu-february";
 
 export const siteHotel: Hotel = {
   id: SITE_HOTEL_ID,
-  name: "대구 2월호텔 더 시그니처-동성로점",
+  name: "대구 2월호텔 더 시그니처 동성로점",
   city: "대구",
   grade: 5,
   heroImages: [

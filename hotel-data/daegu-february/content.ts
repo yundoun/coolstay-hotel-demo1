@@ -3,7 +3,7 @@ import type { SiteContent } from "@/domain/content/types";
 export const siteContent: SiteContent = {
   greeting: {
     headline: "동성로 한복판,\n특별한 시그니처.",
-    body: "대구 2월호텔 더 시그니처-동성로점에 오신 것을 환영합니다!\n루프탑 노천스파와 40여 가지 조식뷔페,\n해피아워까지 잊지 못할 대구 여행을 선사합니다.",
+    body: "대구 2월호텔 더 시그니처 동성로점에 오신 것을 환영합니다!\n루프탑 노천스파와 40여 가지 조식뷔페,\n해피아워까지 잊지 못할 대구 여행을 선사합니다.",
     signature: "대구 2월호텔 더 시그니처 일동",
   },
   about: [
