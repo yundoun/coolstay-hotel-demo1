@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import { cn } from "@/ui/lib/cn";
-import { siteHotel } from "@/hotel-data/hotel";
+import { siteConfig } from "@/hotel-data";
 
 const NAV_SECTIONS = [
   { id: "rooms", label: "객실" },
@@ -74,7 +74,7 @@ export function SiteHeader() {
       <div className="container-page flex h-[72px] items-center justify-between">
         <Link
           href="/"
-          aria-label={`${siteHotel.name} 홈`}
+          aria-label={`${siteConfig.name} 홈`}
           className="group flex items-center gap-0"
         >
           <span
@@ -84,7 +84,7 @@ export function SiteHeader() {
             )}
             style={{ fontFamily: "var(--font-serif-ko)" }}
           >
-            {siteHotel.name}
+            {siteConfig.name}
           </span>
         </Link>
 

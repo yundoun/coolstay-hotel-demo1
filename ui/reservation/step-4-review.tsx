@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useReservation } from "@/adapters/zustand/reservation-store";
 import { useSubmitReservation } from "@/application/hooks/useSubmitReservation";
 import { useTerms } from "@/application/hooks/useTerms";
+import { Button } from "@/ui/primitives";
 import {
   formatKoDate,
   krw,
@@ -259,22 +260,21 @@ export function Step4Review({ onPrev }: { onPrev?: () => void } = {}) {
         <div className="sticky bottom-0 z-30 -mx-4 mt-2 pointer-events-none px-4 py-4 sm:-mx-0 sm:px-0">
           <div className="pointer-events-auto rounded-lg border border-[var(--color-line)] bg-white/90 backdrop-blur-sm px-4 py-4 flex items-center justify-between">
             {onPrev ? (
-              <button type="button" onClick={onPrev} className="btn btn-secondary">
+              <Button variant="secondary" onClick={onPrev}>
                 ← 이전
-              </button>
+              </Button>
             ) : (
               <Link href="/reservation?step=3" className="btn btn-secondary">
                 ← 이전
               </Link>
             )}
-            <button
-              type="button"
+            <Button
               onClick={submit}
               disabled={!requiredAllChecked || submitting}
-              className="btn btn-primary disabled:opacity-40 disabled:cursor-not-allowed"
+              className="disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {submitting ? "예약 확정 중…" : "예약 확정"}
-            </button>
+            </Button>
           </div>
         </div>
       </div>

@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check } from "lucide-react";
 import { useReservation } from "@/adapters/zustand/reservation-store";
-import { siteHotel } from "@/hotel-data/hotel";
+import { siteConfig } from "@/hotel-data";
 import { formatKoDate, krw, nightsBetween } from "@/domain/shared/utils";
 
 export function ReservationCompleteClient() {
@@ -34,7 +34,7 @@ export function ReservationCompleteClient() {
     <>
       {/* Hero */}
       <section className="relative h-[40svh] min-h-[320px] w-full overflow-hidden">
-        <Image src={siteHotel.heroImages[0]} alt={siteHotel.name} fill priority sizes="100vw" className="object-cover" />
+        <Image src={siteConfig.heroImages[0]} alt={siteConfig.name} fill priority sizes="100vw" className="object-cover" />
         <div className="absolute inset-0 hero-veil" aria-hidden />
       </section>
 
@@ -63,14 +63,14 @@ export function ReservationCompleteClient() {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={apiRoom.roomImage} alt={apiRoom.roomName} className="absolute inset-0 h-full w-full object-cover" />
                 ) : (
-                  <Image src={siteHotel.heroImages[0]} alt={siteHotel.name} fill sizes="280px" className="object-cover" />
+                  <Image src={siteConfig.heroImages[0]} alt={siteConfig.name} fill sizes="280px" className="object-cover" />
                 )}
               </div>
               <div className="flex-1">
                 <span className="t-label-caps text-[var(--color-ink-3)]">
-                  {siteHotel.city} · {siteHotel.grade}-Star Hotel
+                  {siteConfig.city} · {siteConfig.grade}-Star Hotel
                 </span>
-                <h3 className="t-h3 mt-2">{siteHotel.name}</h3>
+                <h3 className="t-h3 mt-2">{siteConfig.name}</h3>
                 <div className="mt-4 t-h4">{apiRoom.roomName}</div>
               </div>
             </section>

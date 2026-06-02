@@ -1,2 +1,3 @@
-export { siteHotel, SITE_HOTEL_ID } from "./hotel";
-export { siteContent } from "./content";
+export { default as siteConfig } from "./daegu-february";
+
+export const SITE_HOTEL_ID = "daegu-february";

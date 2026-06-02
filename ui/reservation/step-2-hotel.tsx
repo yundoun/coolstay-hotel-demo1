@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { SITE_HOTEL_ID } from "@/hotel-data/hotel";
+import { SITE_HOTEL_ID } from "@/hotel-data";
 import { useReservation } from "@/adapters/zustand/reservation-store";
 import type { ApiRoom } from "@/adapters/coolstay/types";
 import { useApiRooms } from "@/application/hooks/useApiRooms";

@@ -4,7 +4,7 @@ import "./globals.css";
 import { SiteHeader } from "@/ui/layout/site-header";
 import { SiteFooter } from "@/ui/layout/site-footer";
 import { ReservationResetGuard } from "@/ui/layout/reservation-reset-guard";
-import { siteHotel } from "@/hotel-data/hotel";
+import { siteConfig } from "@/hotel-data";
 
 const notoSerifKR = Noto_Serif_KR({
   weight: ["400", "500", "700"],
@@ -22,8 +22,8 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: `${siteHotel.name} — 꿀스테이`,
-  description: `${siteHotel.shortConcept}. 온라인 객실 예약.`,
+  title: `${siteConfig.name} — 꿀스테이`,
+  description: `${siteConfig.shortConcept}. 온라인 객실 예약.`,
 };
 
 export default function RootLayout({

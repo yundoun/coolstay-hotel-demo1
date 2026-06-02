@@ -6,7 +6,7 @@ import { useState, useEffect, type FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, ArrowLeft, AlertCircle, X, Loader2, CheckCircle2 } from "lucide-react";
 import { useReservationLookup } from "@/application/hooks/useReservationLookup";
-import { siteHotel } from "@/hotel-data/hotel";
+import { siteConfig } from "@/hotel-data";
 import { krw } from "@/domain/shared/utils";
 import type { BookingItem, BookingStatus } from "@/domain/reservation/types";
 import { cn } from "@/ui/lib/cn";
@@ -104,8 +104,8 @@ export function ReservationLookup() {
       {/* Hero — compact */}
       <section className="relative h-[35svh] min-h-[280px] w-full overflow-hidden">
         <Image
-          src={siteHotel.heroImages[0]}
-          alt={siteHotel.name}
+          src={siteConfig.heroImages[0]}
+          alt={siteConfig.name}
           fill
           priority
           sizes="100vw"
@@ -358,7 +358,7 @@ function BookingCard({
               {booking.bookId}
             </span>
           </div>
-          <h3 className="t-h4 mt-3">{booking.storeName || siteHotel.name}</h3>
+          <h3 className="t-h4 mt-3">{booking.storeName || siteConfig.name}</h3>
           <p className="t-body-sm text-[var(--color-ink-2)] mt-1">{booking.roomName}</p>
         </div>
       </section>

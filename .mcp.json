@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "coolstay_docs": {
+      "command": "node",
+      "args": ["/Users/yundoun/Desktop/project/coolstay-docs-mcp/dist/server.js"]
+    }
+  }
+}

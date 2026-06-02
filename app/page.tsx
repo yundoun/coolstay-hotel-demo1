@@ -1,5 +1,4 @@
-import { siteHotel } from "@/hotel-data/hotel";
-import { siteContent } from "@/hotel-data/content";
+import { siteConfig } from "@/hotel-data";
 import { Reveal } from "@/ui/shared/reveal";
 import { AboutBlocks } from "@/ui/home/about-blocks";
 import { ApiRoomTabs } from "@/ui/home/api-room-tabs";
@@ -7,31 +6,31 @@ import { OnepageReservation } from "@/ui/reservation/onepage-reservation";
 import { HeroCarousel } from "@/ui/home/hero-carousel";
 
 export default function HomePage() {
-  const { greeting, about, directions } = siteContent;
+  const { greeting, about, directions } = siteConfig;
 
   return (
     <>
       {/* ============== HERO ============== */}
       <section id="top" className="relative w-full">
         <div className="relative h-svh w-full overflow-hidden">
-          <HeroCarousel images={siteHotel.heroImages} alt={siteHotel.name} />
+          <HeroCarousel images={siteConfig.heroImages} alt={siteConfig.name} />
           <div className="absolute inset-0 hero-veil" aria-hidden />
 
           <div className="absolute inset-x-0 top-0 bottom-0 flex items-end">
             <div className="container-page pb-10 md:pb-[72px]">
               <Reveal>
                 <span className="t-label-caps block text-white/80">
-                  {siteHotel.city} · {siteHotel.grade}-Star Hotel
+                  {siteConfig.city} · {siteConfig.grade}-Star Hotel
                 </span>
               </Reveal>
               <Reveal delay={0.08}>
-                <h1 className={`${siteHotel.heroTitleSize === "sm" ? "t-display-sm" : "t-display"} mt-4 text-white`}>
-                  {siteHotel.name}
+                <h1 className={`${siteConfig.heroTitleSize === "sm" ? "t-display-sm" : "t-display"} mt-4 text-white`}>
+                  {siteConfig.name}
                 </h1>
               </Reveal>
               <Reveal delay={0.18}>
                 <p className="t-serif-en t-body-lg mt-6 text-white/80">
-                  {siteHotel.shortConcept}
+                  {siteConfig.shortConcept}
                 </p>
               </Reveal>
             </div>
@@ -134,7 +133,7 @@ export default function HomePage() {
                 allowFullScreen
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
-                title={`${siteHotel.name} 위치`}
+                title={`${siteConfig.name} 위치`}
               />
             </div>
           </Reveal>

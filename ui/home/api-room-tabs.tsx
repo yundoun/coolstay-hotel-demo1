@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { cn } from "@/ui/lib/cn";
+import { Button } from "@/ui/primitives";
 import { krw } from "@/domain/shared/utils";
 import { useStoreInfo } from "@/application/hooks/useStoreInfo";
 
@@ -404,8 +405,7 @@ export function ApiRoomTabs() {
           </div>
 
           <div className="mt-6 flex gap-3">
-            <button
-              type="button"
+            <Button
               onClick={() => {
                 const el = document.getElementById("step-indicator");
                 if (el) {
@@ -413,10 +413,9 @@ export function ApiRoomTabs() {
                   window.scrollTo({ top, behavior: "smooth" });
                 }
               }}
-              className="btn btn-primary"
             >
               예약하기 →
-            </button>
+            </Button>
           </div>
         </div>
       </div>

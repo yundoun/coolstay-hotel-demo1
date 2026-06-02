@@ -1,4 +1,4 @@
-import { siteHotel } from "@/hotel-data/hotel";
+import { siteConfig } from "@/hotel-data";
 
 export function SiteFooter() {
   return (
@@ -10,7 +10,7 @@ export function SiteFooter() {
               className="text-[16px] font-semibold tracking-[-0.01em] text-[var(--color-ink)]"
               style={{ fontFamily: "var(--font-serif-ko)" }}
             >
-              {siteHotel.name}
+              {siteConfig.name}
             </span>
           </div>
           <div className="grid grid-cols-1 gap-x-12 gap-y-2 text-[13px] text-[var(--color-ink-3)] md:grid-cols-2 md:text-right">
@@ -18,18 +18,18 @@ export function SiteFooter() {
               <span className="t-label-caps block text-[var(--color-mute)]">
                 Phone
               </span>
-              {siteHotel.phone}
+              {siteConfig.phone}
             </div>
             <div>
               <span className="t-label-caps block text-[var(--color-mute)]">
                 Address
               </span>
-              {siteHotel.address}
+              {siteConfig.address}
             </div>
           </div>
         </div>
         <div className="mt-12 flex flex-col gap-2 border-t border-[var(--color-line)] pt-6 text-[12px] text-[var(--color-mute)] md:flex-row md:items-center md:justify-between">
-          <span>© 2026 {siteHotel.name}. All rights reserved.</span>
+          <span>© 2026 {siteConfig.name}. All rights reserved.</span>
           <span className="t-label-caps">
             Powered by CoolStay
           </span>
