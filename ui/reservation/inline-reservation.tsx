@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { useReservation } from "@/adapters/zustand/reservation-store";
+import { formatKoDate, formatKoDateShort, nightsBetween } from "@/domain/shared/utils";
 import { StepIndicator } from "@/ui/shared/step-indicator";
 import { Step1Dates } from "./step-1-dates";
 import { Step2Hotel } from "./step-2-hotel";
@@ -68,6 +69,19 @@ export function InlineReservation() {
     <div>
       <div id="step-scroll-anchor" aria-hidden />
       <StepIndicator current={step} onStepClick={goToWithReset} />
+      {step >= 2 && (
+        <div className="sticky top-[calc(72px+58px)] z-[39] border-b border-[var(--color-line)] bg-white">
+          <div className="container-page flex items-center gap-2 py-2.5 text-[13px] text-[var(--color-ink-3)]">
+            <span className="font-medium text-[var(--color-ink)] sm:hidden">{formatKoDateShort(store.checkIn)}</span>
+            <span className="font-medium text-[var(--color-ink)] hidden sm:inline">{formatKoDate(store.checkIn)}</span>
+            <span className="text-[var(--color-mute)]">→</span>
+            <span className="font-medium text-[var(--color-ink)] sm:hidden">{formatKoDateShort(store.checkOut)}</span>
+            <span className="font-medium text-[var(--color-ink)] hidden sm:inline">{formatKoDate(store.checkOut)}</span>
+            <span className="text-[var(--color-line)]">·</span>
+            <span>{nightsBetween(store.checkIn, store.checkOut)}박 · 성인 {store.adults}인</span>
+          </div>
+        </div>
+      )}
       <div className="container-page py-[64px]">
         <AnimatePresence mode="wait">
           <motion.div

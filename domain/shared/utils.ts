@@ -26,6 +26,16 @@ export function formatKoDate(iso: string): string {
   }
 }
 
+/** 축약 날짜: "6/5(금)" — 좁은 UI용 */
+export function formatKoDateShort(iso: string): string {
+  if (!iso) return "";
+  try {
+    return format(parseISO(iso), "M/d(EEE)", { locale: ko });
+  } catch {
+    return iso;
+  }
+}
+
 export function todayISO(): string {
   return format(new Date(), "yyyy-MM-dd");
 }
