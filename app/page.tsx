@@ -97,7 +97,7 @@ export default function HomePage() {
             </Reveal>
             <Reveal delay={0.05}>
               <h2 className="t-h2 mt-6">
-                온라인 예약<span className="text-[0.6em] font-bold">(Powered by 꿀스테이)</span>
+                온라인 예약<br className="sm:hidden" /><span className="text-[0.6em] font-bold">(Powered by 꿀스테이)</span>
               </h2>
             </Reveal>
             <Reveal delay={0.1}>
