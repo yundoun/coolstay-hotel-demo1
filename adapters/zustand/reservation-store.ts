@@ -2,7 +2,8 @@
 
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { addDaysISO, todayISO } from "@/domain/shared/utils";
+import { addDaysISO, nightsBetween, todayISO } from "@/domain/shared/utils";
+import { MAX_NIGHTS } from "@/domain/shared/constants";
 import { SITE_HOTEL_ID } from "@/hotel-data";
 import type { ApiRoomSelection } from "@/domain/reservation/types";
 
@@ -66,7 +67,13 @@ export const useReservation = create<ReservationState>()(
   persist(
     (set) => ({
       ...INITIAL_STATE,
-      setDates: (checkIn, checkOut) => set({ checkIn, checkOut }),
+      setDates: (checkIn, checkOut) => {
+        const nights = nightsBetween(checkIn, checkOut);
+        const clamped = nights > MAX_NIGHTS
+          ? addDaysISO(checkIn, MAX_NIGHTS)
+          : checkOut;
+        set({ checkIn, checkOut: clamped });
+      },
       setAdults: (adults) => set({ adults }),
       setHotel: (hotelId) => set({ hotelId, roomId: null, apiRoom: null }),
       setRoom: (roomId) => set({ roomId }),

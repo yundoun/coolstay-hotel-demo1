@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  addDays,
   addMonths,
   subMonths,
   startOfMonth,
@@ -20,6 +21,7 @@ import {
 } from "date-fns";
 import { ko } from "date-fns/locale";
 import { motion } from "framer-motion";
+import { MAX_NIGHTS } from "@/domain/shared/constants";
 
 type CalendarMode = "checkIn" | "checkOut";
 
@@ -57,6 +59,12 @@ export function CalendarWidget({
 
   const nextMonth = addMonths(currentMonth, 1);
 
+  // checkOut 모드일 때 선택 가능한 최대 날짜 (checkIn + MAX_NIGHTS)
+  const maxCheckOut = useMemo(
+    () => (checkIn ? addDays(checkIn, MAX_NIGHTS) : null),
+    [checkIn],
+  );
+
   const handleDayClick = useCallback(
     (day: Date) => {
       if (isBefore(day, today)) return;
@@ -69,12 +77,14 @@ export function CalendarWidget({
           onSelect(day, null);
           setActiveMode("checkOut");
         } else {
+          // 최대 박수 초과 시 클릭 무시
+          if (maxCheckOut && isAfter(day, maxCheckOut)) return;
           onSelect(checkIn, day);
           setTimeout(onClose, 280);
         }
       }
     },
-    [activeMode, checkIn, checkOut, onSelect, onClose, today],
+    [activeMode, checkIn, checkOut, maxCheckOut, onSelect, onClose, today],
   );
 
   const isInRange = useCallback(
@@ -146,6 +156,7 @@ export function CalendarWidget({
         <MonthGrid
           month={currentMonth}
           today={today}
+          maxCheckOut={activeMode === "checkOut" ? maxCheckOut : null}
           isInRange={isInRange}
           isRangeStart={isRangeStart}
           isRangeEnd={isRangeEnd}
@@ -158,6 +169,7 @@ export function CalendarWidget({
         <MonthGrid
           month={nextMonth}
           today={today}
+          maxCheckOut={activeMode === "checkOut" ? maxCheckOut : null}
           isInRange={isInRange}
           isRangeStart={isRangeStart}
           isRangeEnd={isRangeEnd}
@@ -197,6 +209,9 @@ export function CalendarWidget({
               }`}>
                 {previewNights}박
               </span>
+              <span className="ml-1.5 text-[11px] text-[var(--color-mute)]">
+                / 최대 {MAX_NIGHTS}박
+              </span>
             </span>
           );
         })()}
@@ -210,6 +225,7 @@ export function CalendarWidget({
 function MonthGrid({
   month,
   today,
+  maxCheckOut,
   isInRange,
   isRangeStart,
   isRangeEnd,
@@ -223,6 +239,7 @@ function MonthGrid({
 }: {
   month: Date;
   today: Date;
+  maxCheckOut: Date | null;
   isInRange: (d: Date) => boolean;
   isRangeStart: (d: Date) => boolean;
   isRangeEnd: (d: Date) => boolean;
@@ -299,7 +316,7 @@ function MonthGrid({
             return <div key={day.toISOString()} className="h-10" />;
           }
 
-          const isPast = isBefore(day, today);
+          const isPast = isBefore(day, today) || (maxCheckOut != null && isAfter(day, maxCheckOut));
           const rangeStart = isRangeStart(day);
           const rangeEnd = isRangeEnd(day);
           const inRange = isInRange(day);
