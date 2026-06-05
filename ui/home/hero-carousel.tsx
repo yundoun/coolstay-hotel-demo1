@@ -1,69 +1,50 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay, EffectFade } from "swiper/modules";
+import type { Swiper as SwiperType } from "swiper";
+import "swiper/css";
+import "swiper/css/effect-fade";
 
 type Props = {
   images: string[];
   alt: string;
-  intervalMs?: number;
 };
 
-export function HeroCarousel({ images, alt, intervalMs = 10000 }: Props) {
-  const [current, setCurrent] = useState(0);
+export function HeroCarousel({ images, alt }: Props) {
   const count = images.length;
   const shouldAnimate = count > 1;
-
-  const next = useCallback(() => {
-    setCurrent((i) => (i + 1) % count);
-  }, [count]);
-
-  const prev = useCallback(() => {
-    setCurrent((i) => (i - 1 + count) % count);
-  }, [count]);
-
-  useEffect(() => {
-    if (!shouldAnimate) return;
-    const id = setInterval(next, intervalMs);
-    return () => clearInterval(id);
-  }, [shouldAnimate, next, intervalMs]);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
 
   return (
     <div className="absolute inset-0">
-      {images.map((src, i) => (
-        <Image
-          key={src}
-          src={src}
-          alt={`${alt} ${i + 1}`}
-          fill
-          priority={i === 0}
-          sizes="100vw"
-          className={`object-cover transition-opacity duration-1000 ease-in-out ${
-            i === current ? "opacity-100" : "opacity-0"
-          }`}
-        />
-      ))}
-
-      {/* Arrow buttons — desktop hover only */}
-      {shouldAnimate && (
-        <>
-          <button
-            onClick={prev}
-            aria-label="이전 이미지"
-            className="absolute top-1/2 z-10 -translate-y-1/2 left-[max(var(--page-gutter),calc((100vw-var(--container-max))/2+var(--page-gutter)))] hidden md:flex h-10 w-10 items-center justify-center rounded-full bg-black/20 text-white opacity-60 backdrop-blur-sm transition-opacity duration-300 hover:opacity-100"
-          >
-            <ChevronLeft size={22} strokeWidth={1.5} />
-          </button>
-          <button
-            onClick={next}
-            aria-label="다음 이미지"
-            className="absolute top-1/2 z-10 -translate-y-1/2 right-[max(var(--page-gutter),calc((100vw-var(--container-max))/2+var(--page-gutter)))] hidden md:flex h-10 w-10 items-center justify-center rounded-full bg-black/20 text-white opacity-60 backdrop-blur-sm transition-opacity duration-300 hover:opacity-100"
-          >
-            <ChevronRight size={22} strokeWidth={1.5} />
-          </button>
-        </>
-      )}
+      <Swiper
+        modules={[Autoplay, EffectFade]}
+        effect="fade"
+        autoplay={{ delay: 10_000, disableOnInteraction: false }}
+        onSwiper={setSwiperInstance}
+        onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
+        loop={shouldAnimate}
+        className="h-full w-full"
+      >
+        {images.map((src, i) => (
+          <SwiperSlide key={i}>
+            <div className="relative h-full w-full">
+              <Image
+                src={src}
+                alt={`${alt} ${i + 1}`}
+                fill
+                priority={i === 0}
+                sizes="100vw"
+                className="object-cover scale-105 transition-transform duration-[8000ms] ease-out"
+              />
+            </div>
+          </SwiperSlide>
+        ))}
+      </Swiper>
 
       {/* Dots indicator */}
       {shouldAnimate && (
@@ -71,10 +52,10 @@ export function HeroCarousel({ images, alt, intervalMs = 10000 }: Props) {
           {images.map((_, i) => (
             <button
               key={i}
-              onClick={() => setCurrent(i)}
+              onClick={() => swiperInstance?.slideTo(i + 1)}
               aria-label={`이미지 ${i + 1}`}
               className={`h-2 rounded-full transition-all duration-300 ${
-                i === current
+                i === activeIndex
                   ? "w-6 bg-white"
                   : "w-2 bg-white/50 hover:bg-white/70"
               }`}
