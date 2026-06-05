@@ -43,9 +43,9 @@ function TextBlock({ block }: { block: AboutBlock }) {
   return (
     <section className="py-16 md:py-[120px]">
       <div className="container-page max-w-[800px]">
-        {block.eyebrow && (
+        {block.subtitle && (
           <Reveal>
-            <span className="eyebrow">{block.eyebrow}</span>
+            <span className="eyebrow">{block.subtitle}</span>
           </Reveal>
         )}
         <Reveal delay={0.05}>
@@ -93,9 +93,9 @@ function ImageTextBlock({ block, index }: { block: AboutBlock; index: number }) 
 
           {/* Text */}
           <div>
-            {block.eyebrow && (
+            {block.subtitle && (
               <Reveal>
-                <span className="eyebrow">{block.eyebrow}</span>
+                <span className="eyebrow">{block.subtitle}</span>
               </Reveal>
             )}
             <Reveal delay={0.08}>
@@ -120,9 +120,9 @@ function FeatureGridBlock({ block }: { block: AboutBlock }) {
   return (
     <section className="bg-[var(--color-bg-soft)] py-16 md:py-[120px]">
       <div className="container-page">
-        {block.eyebrow && (
+        {block.subtitle && (
           <Reveal>
-            <span className="eyebrow">{block.eyebrow}</span>
+            <span className="eyebrow">{block.subtitle}</span>
           </Reveal>
         )}
         <Reveal delay={0.05}>

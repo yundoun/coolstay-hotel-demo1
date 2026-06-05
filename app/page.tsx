@@ -126,7 +126,7 @@ export default function HomePage() {
           <Reveal delay={0.1}>
             <div className="relative aspect-[4/3] md:aspect-[21/9] w-full overflow-hidden rounded-[2px]">
               <iframe
-                src={`https://maps.google.com/maps?q=${encodeURIComponent(directions.mapQuery)}&t=&z=16&ie=UTF8&iwloc=&output=embed`}
+                src={`https://maps.google.com/maps?q=${encodeURIComponent(siteConfig.address)}&t=&z=16&ie=UTF8&iwloc=&output=embed`}
                 width="100%"
                 height="100%"
                 className="absolute inset-0 border-0"
@@ -141,7 +141,7 @@ export default function HomePage() {
           {/* 안내 항목 — 라벨+값 그리드 */}
           <Reveal delay={0.15}>
             <div className="mt-8 md:mt-[48px] flex flex-wrap gap-x-10 gap-y-6 md:gap-x-14">
-              {directions.items.map((item) => (
+              {directions.nearbyItems.map((item) => (
                 <div key={item.label} className="min-w-[120px] max-w-[320px] shrink-0">
                   <span className="t-label-caps text-[var(--color-ink-3)]">{item.label}</span>
                   <p className="t-body mt-1 whitespace-pre-line text-[var(--color-ink)]">{item.value}</p>
