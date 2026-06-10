@@ -24,10 +24,6 @@ const config: SiteConfig = {
   address: "대구 중구 중앙대로81길 13",
   /** 대표 연락처 */
   phone: "053-257-9898",
-  /** 체크인 시간 */
-  checkInTime: "15:00",
-  /** 체크아웃 시간 */
-  checkOutTime: "11:00",
 
   /* ── Hero 섹션 (배너 슬라이드 이미지, 최대 5장) ── */
   heroImages: [
