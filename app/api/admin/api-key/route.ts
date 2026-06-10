@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readFileSync, writeFileSync } from "fs";
 import { join } from "path";
+import { invalidateToken } from "@/adapters/coolstay/client";
 
 export const dynamic = "force-dynamic";
 
@@ -25,5 +26,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "모텔키를 입력해주세요." }, { status: 400 });
   }
   writeFileSync(KEY_PATH, JSON.stringify({ motelKey: motelKey.trim() }, null, 2) + "\n", "utf-8");
+  invalidateToken();
   return NextResponse.json({ success: true });
 }
