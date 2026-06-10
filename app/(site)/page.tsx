@@ -14,9 +14,9 @@ export default function HomePage() {
       <section id="top" className="relative w-full">
         <div className="relative h-svh w-full overflow-hidden">
           <HeroCarousel images={siteConfig.heroImages} alt={siteConfig.name} />
-          <div className="absolute inset-0 hero-veil" aria-hidden />
+          <div className="absolute inset-0 z-[1] hero-veil" aria-hidden />
 
-          <div className="absolute inset-x-0 top-0 bottom-0 flex items-end">
+          <div className="absolute inset-x-0 top-0 bottom-0 z-[2] flex items-end">
             <div className="container-page pb-10 md:pb-[72px]">
               <Reveal>
                 <span className="t-label-caps block text-white/80">
