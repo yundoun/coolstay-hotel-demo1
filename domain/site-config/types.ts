@@ -1,5 +1,3 @@
-import type { AboutBlock } from "@/domain/content/types";
-
 /**
  * 호텔 웹사이트 템플릿 설정 타입
  * ─────────────────────────────
@@ -49,8 +47,16 @@ export type SiteConfig = {
   /* ══════════════════════════════════════
      호텔 소개(About) 섹션
      ══════════════════════════════════════ */
-  /** About 섹션 블록들 — 순서대로 렌더링 */
-  about: AboutBlock[];
+  about: {
+    /** 섹션 소제목 — 제목 위에 작게 표시 (예: "Story") */
+    subtitle?: string;
+    /** 제목 (줄바꿈: \n) */
+    title: string;
+    /** 본문 설명 */
+    body?: string;
+    /** 갤러리 이미지 URL 목록 (최대 5장) */
+    images: string[];
+  };
 
   /* ══════════════════════════════════════
      찾아오는 길 섹션

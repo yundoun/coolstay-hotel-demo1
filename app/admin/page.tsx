@@ -4,8 +4,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { ImageUploadZone } from "./_components/image-upload-zone";
 import type { SiteConfig } from "@/domain/site-config/types";
-import type { AboutBlock } from "@/domain/content/types";
-import { Save, Plus, Trash2, Eye, RotateCcw, CheckCircle2, XCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { Save, Plus, Trash2, Eye, RotateCcw, CheckCircle2, XCircle } from "lucide-react";
 
 export default function AdminPage() {
   const [loading, setLoading] = useState(true);
@@ -17,7 +16,7 @@ export default function AdminPage() {
   const { register, handleSubmit, setValue, watch, reset } = useForm<SiteConfig>();
 
   const heroImages = watch("heroImages") || [];
-  const aboutBlocks = watch("about") || [];
+  const aboutImages = watch("about.images") || [];
   const nearbyItems = watch("directions.nearbyItems") || [];
 
   useEffect(() => {
@@ -66,43 +65,6 @@ export default function AdminPage() {
     }
   };
 
-  /* ── About Block helpers ── */
-  const addAboutBlock = (type: AboutBlock["type"]) => {
-    const newBlock: AboutBlock = {
-      type,
-      title: "",
-      ...(type === "image-text" ? { image: "", imagePosition: "right" as const } : {}),
-      ...(type === "feature-grid" ? { features: [{ icon: "✦", title: "", description: "" }] } : {}),
-    };
-    setValue("about", [...aboutBlocks, newBlock]);
-  };
-
-  const removeAboutBlock = (index: number) => {
-    setValue("about", aboutBlocks.filter((_, i) => i !== index));
-  };
-
-  const moveAboutBlock = (index: number, dir: -1 | 1) => {
-    const next = [...aboutBlocks];
-    const target = index + dir;
-    if (target < 0 || target >= next.length) return;
-    [next[index], next[target]] = [next[target], next[index]];
-    setValue("about", next);
-  };
-
-  /* ── Feature helpers ── */
-  const addFeature = (blockIndex: number) => {
-    const block = aboutBlocks[blockIndex];
-    const features = [...(block.features || []), { icon: "✦", title: "", description: "" }];
-    setValue(`about.${blockIndex}.features`, features);
-  };
-
-  const removeFeature = (blockIndex: number, featureIndex: number) => {
-    const block = aboutBlocks[blockIndex];
-    const features = (block.features || []).filter((_, i) => i !== featureIndex);
-    setValue(`about.${blockIndex}.features`, features);
-  };
-
-  /* ── Nearby helpers ── */
   const addNearbyItem = () => {
     setValue("directions.nearbyItems", [...nearbyItems, { label: "", value: "" }]);
   };
@@ -225,129 +187,23 @@ export default function AdminPage() {
           </Field>
         </Section>
 
-        {/* ── About 블록 ── */}
+        {/* ── About ── */}
         <Section title="호텔 소개 (About)">
-          <p className="text-sm text-neutral-500 -mt-2 mb-4">
-            블록을 추가하여 소개 섹션을 구성하세요. 순서대로 화면에 표시됩니다.
-          </p>
-
-          <div className="space-y-4">
-            {aboutBlocks.map((block, bi) => (
-              <div key={bi} className="border border-neutral-200 rounded-lg p-4 bg-neutral-50/50">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-semibold text-neutral-700">
-                    블록 {bi + 1} — {block.type === "text" ? "텍스트" : block.type === "image-text" ? "이미지+텍스트" : "특징 그리드"}
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <button type="button" onClick={() => moveAboutBlock(bi, -1)} disabled={bi === 0}
-                      className="p-1 text-neutral-400 hover:text-neutral-700 disabled:opacity-30 transition-colors">
-                      <ChevronUp className="w-4 h-4" />
-                    </button>
-                    <button type="button" onClick={() => moveAboutBlock(bi, 1)} disabled={bi === aboutBlocks.length - 1}
-                      className="p-1 text-neutral-400 hover:text-neutral-700 disabled:opacity-30 transition-colors">
-                      <ChevronDown className="w-4 h-4" />
-                    </button>
-                    <button type="button" onClick={() => removeAboutBlock(bi)}
-                      className="p-1 text-red-400 hover:text-red-600 transition-colors">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <Field label="블록 타입">
-                    <select {...register(`about.${bi}.type`)} className="field">
-                      <option value="text">텍스트</option>
-                      <option value="image-text">이미지+텍스트</option>
-                      <option value="feature-grid">특징 그리드</option>
-                    </select>
-                  </Field>
-                  <Field label="소제목" desc="제목 위에 작게 표시 (예: Story)">
-                    <input {...register(`about.${bi}.subtitle`)} className="field" />
-                  </Field>
-                  <Field label="제목">
-                    <textarea {...register(`about.${bi}.title`)} className="field" rows={2} />
-                  </Field>
-                  <Field label="본문">
-                    <textarea {...register(`about.${bi}.body`)} className="field" rows={3} />
-                  </Field>
-
-                  {/* image-text 전용 */}
-                  {block.type === "image-text" && (
-                    <>
-                      <Field label="이미지 URL">
-                        <input {...register(`about.${bi}.image`)} className="field" placeholder="https://..." />
-                      </Field>
-                      <ImageUploadZone
-                        images={block.image ? [block.image] : []}
-                        onChange={(imgs) => setValue(`about.${bi}.image`, imgs[0] || "")}
-                        max={1}
-                        label="또는 이미지 업로드"
-                      />
-                      <Field label="이미지 위치">
-                        <select {...register(`about.${bi}.imagePosition`)} className="field">
-                          <option value="left">왼쪽</option>
-                          <option value="right">오른쪽</option>
-                        </select>
-                      </Field>
-                    </>
-                  )}
-
-                  {/* feature-grid 전용 */}
-                  {block.type === "feature-grid" && (
-                    <div>
-                      <p className="text-sm font-medium text-neutral-700 mb-2">특징 목록</p>
-                      <div className="space-y-2">
-                        {(block.features || []).map((_, fi) => (
-                          <div key={fi} className="flex gap-2 items-start">
-                            <input
-                              {...register(`about.${bi}.features.${fi}.icon`)}
-                              placeholder="아이콘"
-                              className="field w-16 text-center"
-                            />
-                            <input
-                              {...register(`about.${bi}.features.${fi}.title`)}
-                              placeholder="제목"
-                              className="field flex-1"
-                            />
-                            <input
-                              {...register(`about.${bi}.features.${fi}.description`)}
-                              placeholder="설명"
-                              className="field flex-1"
-                            />
-                            <button type="button" onClick={() => removeFeature(bi, fi)}
-                              className="p-2 text-red-400 hover:text-red-600 transition-colors mt-1">
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                      <button type="button" onClick={() => addFeature(bi)}
-                        className="mt-2 flex items-center gap-1 text-sm text-neutral-500 hover:text-neutral-700 transition-colors">
-                        <Plus className="w-4 h-4" /> 특징 추가
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* 블록 추가 버튼 */}
-          <div className="flex gap-2 mt-3">
-            <button type="button" onClick={() => addAboutBlock("text")}
-              className="flex items-center gap-1 text-sm bg-white border border-neutral-200 px-3 py-2 rounded-lg hover:bg-neutral-50 transition-colors">
-              <Plus className="w-4 h-4" /> 텍스트 블록
-            </button>
-            <button type="button" onClick={() => addAboutBlock("image-text")}
-              className="flex items-center gap-1 text-sm bg-white border border-neutral-200 px-3 py-2 rounded-lg hover:bg-neutral-50 transition-colors">
-              <Plus className="w-4 h-4" /> 이미지+텍스트
-            </button>
-            <button type="button" onClick={() => addAboutBlock("feature-grid")}
-              className="flex items-center gap-1 text-sm bg-white border border-neutral-200 px-3 py-2 rounded-lg hover:bg-neutral-50 transition-colors">
-              <Plus className="w-4 h-4" /> 특징 그리드
-            </button>
-          </div>
+          <Field label="소제목" desc="제목 위에 작게 표시 (예: About, Story)">
+            <input {...register("about.subtitle")} className="field" />
+          </Field>
+          <Field label="제목" desc="줄바꿈은 Enter 키 사용">
+            <textarea {...register("about.title")} className="field" rows={2} />
+          </Field>
+          <Field label="본문">
+            <textarea {...register("about.body")} className="field" rows={4} />
+          </Field>
+          <ImageUploadZone
+            images={aboutImages}
+            onChange={(imgs) => setValue("about.images", imgs)}
+            max={5}
+            label="소개 섹션 이미지"
+          />
         </Section>
 
         {/* ── 찾아오는 길 ── */}

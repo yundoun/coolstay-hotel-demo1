@@ -1,20 +1,3 @@
-export type AboutBlock = {
-  /** 블록 유형: text = 텍스트 중심, image-text = 이미지+텍스트, feature-grid = 특징 그리드 */
-  type: "text" | "image-text" | "feature-grid";
-  /** 섹션 소제목 — 제목 위에 작게 표시 (예: "Story", "Facilities") */
-  subtitle?: string;
-  /** 제목 (줄바꿈: \n) */
-  title: string;
-  /** 본문 설명 */
-  body?: string;
-  /** 이미지 URL — image-text 타입에서 사용 */
-  image?: string;
-  /** image-text 타입에서 이미지 위치 ("left" 또는 "right") */
-  imagePosition?: "left" | "right";
-  /** feature-grid 타입에서 사용할 특징 목록 */
-  features?: { icon: string; title: string; description: string }[];
-};
-
 export type SiteContent = {
   /** 사장님 인사말 */
   greeting: {
@@ -22,8 +5,13 @@ export type SiteContent = {
     body: string;
     signature: string;
   };
-  /** About 섹션 블록들 — 순서대로 렌더링 */
-  about: AboutBlock[];
+  /** About 섹션 */
+  about: {
+    subtitle?: string;
+    title: string;
+    body?: string;
+    images: string[];
+  };
   /** 찾아오는 길 — 지도 + 안내 항목 */
   directions: {
     /** 주차 안내 — 없으면 빈 문자열 */

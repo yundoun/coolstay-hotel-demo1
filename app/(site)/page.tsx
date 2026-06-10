@@ -1,6 +1,6 @@
 import { siteConfig } from "@/hotel-data";
 import { Reveal } from "@/ui/shared/reveal";
-import { AboutBlocks } from "@/ui/home/about-blocks";
+import { AboutSection } from "@/ui/home/about-blocks";
 import { ApiRoomTabs } from "@/ui/home/api-room-tabs";
 import { OnepageReservation } from "@/ui/reservation/onepage-reservation";
 import { HeroCarousel } from "@/ui/home/hero-carousel";
@@ -62,9 +62,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ============== ABOUT (데이터 기반 블록) ============== */}
+      {/* ============== ABOUT ============== */}
       <div id="about">
-        <AboutBlocks blocks={about} />
+        <AboutSection about={about} />
       </div>
 
       {/* ============== 객실 안내 (간단 그리드) ============== */}

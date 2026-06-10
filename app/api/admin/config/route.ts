@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { readFileSync, writeFileSync, copyFileSync } from "fs";
 import { join } from "path";
 import type { SiteConfig } from "@/domain/site-config/types";
-import type { AboutBlock } from "@/domain/content/types";
 
 export const dynamic = "force-dynamic";
 
@@ -51,8 +50,8 @@ function generateConfigFile(c: SiteConfig): string {
     .map((url) => `    ${s(url)},`)
     .join("\n");
 
-  const aboutBlocks = c.about
-    .map((block) => generateAboutBlock(block))
+  const aboutImages = c.about.images
+    .map((url) => `    ${s(url)},`)
     .join("\n");
 
   return `import type { SiteConfig } from "@/domain/site-config/types";
@@ -101,9 +100,18 @@ ${heroImages}
   },
 
   /* \u2500\u2500 \ud638\ud154 \uc18c\uac1c(About) \uc139\uc158 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
-  about: [
-${aboutBlocks}
-  ],
+  about: {
+    /** \uc139\uc158 \uc18c\uc81c\ubaa9 \u2014 \uc81c\ubaa9 \uc704\uc5d0 \uc791\uac8c \ud45c\uc2dc */
+    subtitle: ${s(c.about.subtitle || "")},
+    /** \uc81c\ubaa9 (\uc904\ubc14\uafb8: \\n) */
+    title: ${s(c.about.title)},
+    /** \ubcf8\ubb38 \uc124\uba85 */
+    body: ${s(c.about.body || "")},
+    /** \uac24\ub7ec\ub9ac \uc774\ubbf8\uc9c0 URL (\ucd5c\ub300 5\uc7a5) */
+    images: [
+${aboutImages}
+    ],
+  },
 
   /* \u2500\u2500 \ucc3e\uc544\uc624\ub294 \uae38 \uc139\uc158 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
   directions: {
@@ -120,23 +128,3 @@ export default config;
 `;
 }
 
-function generateAboutBlock(block: AboutBlock): string {
-  const s = JSON.stringify;
-  const lines: string[] = [];
-  lines.push(`    {`);
-  lines.push(`      type: ${s(block.type)},`);
-  if (block.subtitle) lines.push(`      subtitle: ${s(block.subtitle)},`);
-  lines.push(`      title: ${s(block.title)},`);
-  if (block.body) lines.push(`      body: ${s(block.body)},`);
-  if (block.image) lines.push(`      image: ${s(block.image)},`);
-  if (block.imagePosition) lines.push(`      imagePosition: ${s(block.imagePosition)},`);
-  if (block.features && block.features.length > 0) {
-    lines.push(`      features: [`);
-    for (const f of block.features) {
-      lines.push(`        { icon: ${s(f.icon)}, title: ${s(f.title)}, description: ${s(f.description)} },`);
-    }
-    lines.push(`      ],`);
-  }
-  lines.push(`    },`);
-  return lines.join("\n");
-}
