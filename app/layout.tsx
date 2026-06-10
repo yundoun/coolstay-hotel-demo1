@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { Noto_Serif_KR, Playfair_Display } from "next/font/google";
 import "./globals.css";
-import { SiteHeader } from "@/ui/layout/site-header";
-import { SiteFooter } from "@/ui/layout/site-footer";
 import { ReservationResetGuard } from "@/ui/layout/reservation-reset-guard";
 import { siteConfig } from "@/hotel-data";
 
@@ -39,9 +37,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-dvh bg-[var(--color-bg)] text-[var(--color-ink)]">
         <ReservationResetGuard />
-        <SiteHeader />
-        <main className="min-h-dvh">{children}</main>
-        <SiteFooter />
+        {children}
       </body>
     </html>
   );

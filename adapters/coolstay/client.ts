@@ -1,12 +1,26 @@
 /** CoolStay upstream API 클라이언트 */
 
+import { readFileSync } from "fs";
+import { join } from "path";
+
 const API_BASE = process.env.COOLSTAY_API_BASE;
 
 /** yyyy-MM-dd → yyyyMMdd (검수기 내부 서비스 호환) */
 function toCompactDate(iso: string): string {
   return iso.replace(/-/g, "");
 }
-export const MOTEL_KEY = process.env.COOLSTAY_MOTEL_KEY ?? "";
+
+const KEY_PATH = join(process.cwd(), "hotel-data", "daegu-february", "api-key.json");
+
+/** api-key.json에서 모텔키를 요청마다 읽어 반환 */
+export function getMotelKey(): string {
+  try {
+    const data = JSON.parse(readFileSync(KEY_PATH, "utf-8"));
+    return data.motelKey || "";
+  } catch {
+    return process.env.COOLSTAY_MOTEL_KEY ?? "";
+  }
+}
 
 export function getApiBase() {
   if (!API_BASE) throw new Error("COOLSTAY_API_BASE 미설정");
@@ -190,9 +204,10 @@ export async function fetchRefundPolicy(params: {
 
 /** details/list upstream 호출 공통 */
 export async function fetchStoreDetail(params: { checkIn?: string; checkOut?: string }) {
-  if (!MOTEL_KEY) throw new Error("COOLSTAY_MOTEL_KEY 미설정");
+  const motelKey = getMotelKey();
+  if (!motelKey) throw new Error("COOLSTAY_MOTEL_KEY 미설정");
   return callWithRetry(async (headers) => {
-    const qs = new URLSearchParams({ motel_key: MOTEL_KEY, pure_click_yn: "N" });
+    const qs = new URLSearchParams({ motel_key: motelKey, pure_click_yn: "N" });
     if (params.checkIn) qs.set("search_start", toCompactDate(params.checkIn));
     if (params.checkOut) qs.set("search_end", toCompactDate(params.checkOut));
 

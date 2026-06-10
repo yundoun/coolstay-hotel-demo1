@@ -49,6 +49,9 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# hotel api keys (runtime-editable, contain secrets)
+hotel-data/**/api-key.json
+
 # vercel
 .vercel
 
