@@ -1,36 +1,92 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 대구 2월호텔 더 시그니처 동성로점 — 예약 데모 사이트
 
-## Getting Started
+---
 
-First, run the development server:
+## 처음 실행하기
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### Windows
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+1. 프로젝트 폴더를 열어주세요
+2. **`setup.bat`** 파일을 찾아서 **두 번 클릭**하세요
+3. 검은색 창이 열리면서 자동으로 설치가 진행됩니다. **창을 닫지 마세요**
+4. 설치가 끝나면 인터넷 브라우저(크롬 등)가 자동으로 열립니다
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+> 파란색 "Windows의 PC 보호" 경고가 나오면 → **추가 정보** → **실행** 클릭
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Mac
 
-## Learn More
+1. 프로젝트 폴더를 열어주세요
+2. **`setup.command`** 파일을 찾아서 **두 번 클릭**하세요
+3. 터미널 창이 열리면서 자동으로 설치가 진행됩니다. **창을 닫지 마세요**
+4. 설치가 끝나면 인터넷 브라우저(사파리 등)가 자동으로 열립니다
 
-To learn more about Next.js, take a look at the following resources:
+> "확인되지 않은 개발자" 경고가 나오면:
+> 화면 좌측 상단 **사과 아이콘** → **시스템 설정** → **개인정보 보호 및 보안** → 하단의 **확인 없이 열기** 클릭
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 사이트 설정하기
 
-## Deploy on Vercel
+브라우저가 열리면 **관리자 페이지**가 나타납니다.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+여기서 호텔 정보를 입력할 수 있습니다:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **호텔 연결 (API 키)** — 쿨스테이에서 받은 모텔키를 입력하면 객실과 가격이 자동으로 연동됩니다
+- **기본 정보** — 호텔 이름, 주소, 전화번호
+- **배너 이미지** — 메인 화면에 보이는 큰 사진 (최대 5장)
+- **인사말 / 소개** — 호텔을 소개하는 글
+- **찾아오는 길** — 주차 안내, 주변 관광지 정보
+
+내용을 수정한 뒤 화면 아래 **저장** 버튼을 눌러주세요.
+
+---
+
+## 사이트 미리보기
+
+관리자 페이지 오른쪽 위의 **사이트 미리보기**를 클릭하면
+실제 손님에게 보이는 화면을 확인할 수 있습니다.
+
+---
+
+## 종료하기
+
+검은색 창(또는 터미널 창)을 닫으면 서버가 종료됩니다.
+다시 보고 싶으면 `setup.bat` (또는 `setup.command`)을 다시 두 번 클릭하세요.
+
+---
+
+## 소스가 업데이트된 경우
+
+1. SVN에서 **업데이트** 받으세요
+2. `setup.bat` (또는 `setup.command`)을 다시 두 번 클릭하세요
+
+변경된 내용이 자동으로 반영됩니다.
+
+---
+
+## 문제가 생겼을 때
+
+### "Node.js가 설치되어 있지 않습니다" 라고 나오는 경우
+
+보통 자동으로 설치됩니다.
+자동 설치가 안 되면 아래 순서를 따라해 주세요:
+
+1. 인터넷 브라우저에서 **https://nodejs.org/ko** 접속
+2. 화면의 초록색 버튼(**LTS**라고 적힌 것) 클릭 → 파일 다운로드
+3. 다운로드된 파일 두 번 클릭 → **다음 → 다음 → 설치** (모두 기본값)
+4. 설치 끝나면 **컴퓨터를 재시작**
+5. 다시 `setup.bat` (또는 `setup.command`)을 두 번 클릭
+
+### 브라우저가 열렸는데 화면이 안 나오는 경우
+
+- 검은색 창이 아직 열려있는지 확인하세요 (닫으면 서버가 꺼집니다)
+- 5~10초 기다린 뒤 브라우저에서 **새로고침** 해보세요 (키보드 `F5`)
+
+### 설정을 저장했는데 반영이 안 되는 경우
+
+브라우저에서 **새로고침** 해보세요 (키보드 `F5`)
+
+### 위 방법으로도 해결이 안 되면
+
+검은색 창에 나온 글자를 **화면 캡처**(키보드 `Print Screen` 키)해서
+담당 개발자에게 보내주세요.
