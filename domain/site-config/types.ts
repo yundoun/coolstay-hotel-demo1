@@ -15,8 +15,6 @@ export type SiteConfig = {
   name: string;
   /** 소재 도시 (예: "대구") */
   city: string;
-  /** 등급 (4성 or 5성) */
-  grade: 4 | 5;
   /** 주소 — 지도 검색에도 사용됨 (예: "대구 중구 중앙대로81길 13") */
   address: string;
   /** 대표 연락처 (예: "053-257-9898") */

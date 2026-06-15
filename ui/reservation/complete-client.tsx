@@ -68,7 +68,7 @@ export function ReservationCompleteClient() {
               </div>
               <div className="flex-1">
                 <span className="t-label-caps text-[var(--color-ink-3)]">
-                  {siteConfig.city} · {siteConfig.grade}-Star Hotel
+                  {siteConfig.city}
                 </span>
                 <h3 className="t-h3 mt-2">{siteConfig.name}</h3>
                 <div className="mt-4 t-h4">{apiRoom.roomName}</div>

@@ -20,7 +20,7 @@ export default function HomePage() {
             <div className="container-page pb-10 md:pb-[72px]">
               <Reveal>
                 <span className="t-label-caps block text-white/80">
-                  {siteConfig.city} · {siteConfig.grade}-Star Hotel
+                  {siteConfig.city}
                 </span>
               </Reveal>
               <Reveal delay={0.08}>
@@ -137,6 +137,16 @@ export default function HomePage() {
               />
             </div>
           </Reveal>
+
+          {/* 주차 안내 */}
+          {directions.parkingInfo && (
+            <Reveal delay={0.12}>
+              <div className="mt-8 md:mt-[48px]">
+                <span className="t-label-caps text-[var(--color-ink-3)]">주차 안내</span>
+                <p className="t-body mt-1 whitespace-pre-line text-[var(--color-ink)]">{directions.parkingInfo}</p>
+              </div>
+            </Reveal>
+          )}
 
           {/* 안내 항목 — 라벨+값 그리드 */}
           <Reveal delay={0.15}>

@@ -138,15 +138,6 @@ export default function AdminPage() {
           <Field label="도시">
             <input {...register("city")} className="field" />
           </Field>
-          <Field label="등급">
-            <select
-              {...register("grade", { valueAsNumber: true })}
-              className="field"
-            >
-              <option value={4}>4성급</option>
-              <option value={5}>5성급</option>
-            </select>
-          </Field>
           <Field label="주소" desc="지도 검색에도 사용됨">
             <input {...register("address")} className="field" />
           </Field>
@@ -201,7 +192,7 @@ export default function AdminPage() {
           <ImageUploadZone
             images={aboutImages}
             onChange={(imgs) => setValue("about.images", imgs)}
-            max={5}
+            max={1}
             label="소개 섹션 이미지"
           />
         </Section>

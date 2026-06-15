@@ -52,7 +52,3 @@ export function generateReservationNumber(): string {
   const rand = Math.random().toString(36).toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 4).padEnd(4, "X");
   return `CS-${ymd}-${rand}`;
 }
-
-export function starString(grade: 4 | 5): string {
-  return "★".repeat(grade);
-}
